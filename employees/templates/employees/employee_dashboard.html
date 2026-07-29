@@ -1,0 +1,747 @@
+{% extends 'layouts/main_layout.html' %}
+{% load static %}
+{% block title %}Employee Dashboard{% endblock %}
+
+{% block page_content %}
+
+<style>
+    {% load static %}
+    @import url("{% static 'employees/employee_dashboard.css' %}");
+</style>
+
+<div class="dash">
+ 
+    <!-- ═══════════════════════════════════════════
+         HEADER
+    ═══════════════════════════════════════════ -->
+    <div class="dash-header">
+        <div>
+            <h2>
+                <i class="fa-solid fa-table-columns me-2"></i>
+                Welcome, <span style="text-transform:capitalize">{{ request.user.get_full_name|default:request.user.username }}</span>
+                {% if request.user.is_staff %}
+                    <span class="tag-admin">Admin</span>
+                {% else %}
+                    <span class="tag-emp">Employee</span>
+                {% endif %}
+            </h2>
+            <p>
+                Employee Dashboard &mdash; ManTech HRMS
+                &nbsp;|&nbsp;
+                <i class="fa-regular fa-calendar me-1"></i>{{ period_label }}
+            </p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <a href="{% url 'employee_detail' request.user.id %}" class="btn-hdr">
+                <i class="fa-solid fa-id-card"></i> View Profile
+            </a>
+        </div>
+    </div>
+ 
+ 
+    <!-- ═══════════════════════════════════════════
+         ADMIN QUICK ACTIONS  (all staff)
+    ═══════════════════════════════════════════ -->
+    {% if request.user.is_staff %}
+    <div class="admin-bar">
+        <a href="{% url 'edit_add_employee' employee.user.id %}" class="abtn abtn-amber">
+            <i class="fa-solid fa-user-gear"></i> Edit Details
+        </a>
+        <a href="{% url 'employee_list' %}" class="abtn abtn-blue">
+            <i class="fa-solid fa-users"></i> All Employees
+        </a>
+        {% if request.user.is_superuser %}
+        <a href="#adminReport" class="abtn abtn-purple">
+            <i class="fa-solid fa-chart-pie"></i> Payroll Summary
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+ 
+ 
+    <!-- ═══════════════════════════════════════════
+         FILTER BAR
+         Params read: filter_type, current_month,
+         months_list, years_list, current_year
+    ═══════════════════════════════════════════ -->
+    <div class="filter-bar">
+        <label><i class="fa-solid fa-sliders me-1"></i> Period:</label>
+ 
+        <select id="filterType" onchange="toggleMonthFilter()">
+            <option value="monthly" {% if filter_type == 'monthly' %}selected{% endif %}>Monthly</option>
+            <option value="yearly"  {% if filter_type == 'yearly'  %}selected{% endif %}>Yearly</option>
+        </select>
+ 
+        <select id="filterMonth" {% if filter_type == 'yearly' %}style="display:none"{% endif %}>
+            {% for m in months_list %}
+            <option value="{{ forloop.counter }}"
+                {% if forloop.counter == current_month %}selected{% endif %}>
+                {{ m }}
+            </option>
+            {% endfor %}
+        </select>
+ 
+        <select id="filterYear">
+            {% for y in years_list %}
+            <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+ 
+        <button class="filter-btn" onclick="applyFilter()">
+            <i class="fa-solid fa-filter"></i> Apply
+        </button>
+ 
+        <span class="filter-label">
+            <i class="fa-regular fa-clock"></i>
+            Showing: <strong style="color:#111827;margin-left:3px">{{ period_label }}</strong>
+        </span>
+    </div>
+ 
+ 
+    <!-- ═══════════════════════════════════════════
+         STATS CARDS
+         attendance_pct, leave_balance, present_count,
+         half_day_count, late_count, absent_count,
+         leave_count, period_label
+    ═══════════════════════════════════════════ -->
+    <div class="stats-grid">
+ 
+        <!-- Attendance % -->
+        <div class="scard">
+            <div class="ico" style="background:#4f46e5">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <h3>{{ attendance_pct }}%</h3>
+            <p>Attendance</p>
+            <div class="prog">
+                <div class="prog-bar" style="width:{{ attendance_pct }}%"></div>
+            </div>
+            <div class="sub">Present: {{ present_count }} &nbsp;|&nbsp; Half Day: {{ half_day_count }}</div>
+        </div>
+ 
+        <!-- Leave Balance -->
+        <div class="scard">
+            <div class="ico" style="background:#10b981">
+                <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <h3>{{ leave_balance }}</h3>
+            <p>Leave Balance</p>
+            <div class="sub">{{ leave_count }} used of 12 allowed</div>
+        </div>
+ 
+        <!-- Present Days -->
+        <div class="scard">
+            <div class="ico" style="background:#0891b2">
+                <i class="fa-solid fa-user-check"></i>
+            </div>
+            <h3>{{ present_count }}</h3>
+            <p>Present Days</p>
+            <div class="sub">{{ period_label }}</div>
+        </div>
+ 
+        <!-- Half Days -->
+        <div class="scard">
+            <div class="ico" style="background:#f97316">
+                <i class="fa-solid fa-hourglass-half"></i>
+            </div>
+            <h3>{{ half_day_count }}</h3>
+            <p>Half Days</p>
+            <div class="sub">Counted as 0.5 each</div>
+        </div>
+ 
+        <!-- Late Entries -->
+        <div class="scard">
+            <div class="ico" style="background:#d97706">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+            <h3>{{ late_count }}</h3>
+            <p>Late Entries</p>
+            <div class="sub">{{ period_label }}</div>
+        </div>
+ 
+        <!-- Absent Days -->
+        <div class="scard">
+            <div class="ico" style="background:#e11d48">
+                <i class="fa-solid fa-user-xmark"></i>
+            </div>
+            <h3>{{ absent_count }}</h3>
+            <p>Absent Days</p>
+            <div class="sub">{{ period_label }}</div>
+        </div>
+ 
+    </div>
+ 
+ 
+    <!-- ═══════════════════════════════════════════
+         TODAY'S ATTENDANCE
+         today_attendance → .status, .check_in,
+         .check_out, .is_late, .remarks
+    ═══════════════════════════════════════════ -->
+    <div class="section-card">
+        <h4>
+            <i class="fa-solid fa-circle-check" style="color:#10b981"></i>
+            Today's Attendance
+        </h4>
+ 
+        {% if today_attendance %}
+        <div class="att-info">
+ 
+            <div class="att-pill">
+                <i class="fa-solid fa-circle" style="font-size:8px;color:
+                    {% if today_attendance.status == 'Present' %}#10b981
+                    {% elif today_attendance.status == 'Late' %}#f59e0b
+                    {% elif today_attendance.status == 'Half Day' %}#f97316
+                    {% elif today_attendance.status == 'Absent' %}#e11d48
+                    {% else %}#6b7280{% endif %}">
+                </i>
+                Status: <span>{{ today_attendance.status }}</span>
+            </div>
+ 
+            {% if today_attendance.check_in %}
+            <div class="att-pill">
+                <i class="fa-regular fa-clock" style="color:#2563eb"></i>
+                Check-in: <span>{{ today_attendance.check_in }}</span>
+            </div>
+            {% endif %}
+ 
+            {% if today_attendance.check_out %}
+            <div class="att-pill">
+                <i class="fa-regular fa-clock" style="color:#7c3aed"></i>
+                Check-out: <span>{{ today_attendance.check_out }}</span>
+            </div>
+            {% endif %}
+ 
+            {% if today_attendance.status == 'Half Day' %}
+            <div class="att-pill" style="border-color:#fdba74;background:#fff7ed">
+                <i class="fa-solid fa-hourglass-half" style="color:#ea580c"></i>
+                <span style="color:#9a3412">Half Day Marked</span>
+            </div>
+            {% endif %}
+ 
+            {% if today_attendance.is_late %}
+            <div class="att-pill" style="border-color:#fbbf24;background:#fefce8">
+                <i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b"></i>
+                <span style="color:#92400e">Marked Late</span>
+            </div>
+            {% endif %}
+ 
+            {% if today_attendance.remarks %}
+            <div class="att-pill">
+                <i class="fa-regular fa-note-sticky" style="color:#6b7280"></i>
+                {{ today_attendance.remarks }}
+            </div>
+            {% endif %}
+ 
+        </div>
+        {% else %}
+        <p style="font-size:13px;color:#9ca3af;margin:0">
+            <i class="fa-solid fa-circle-exclamation me-1" style="color:#f59e0b"></i>
+            No attendance record found for today.
+        </p>
+        {% endif %}
+    </div>
+ 
+ 
+    <!-- ═══════════════════════════════════════════
+         CHARTS — ATTENDANCE + SALARY
+         monthly_att_data, monthly_sal_data,
+         monthly_half_day_data, current_year
+    ═══════════════════════════════════════════ -->
+    <div class="charts-grid">
+ 
+        <div class="chart-card">
+            <h4>
+                <i class="fa-solid fa-chart-bar" style="color:#4f46e5"></i>
+                Attendance Summary — {{ current_year }}
+            </h4>
+            <canvas id="attChart" height="200"></canvas>
+        </div>
+ 
+        <div class="chart-card">
+            <h4>
+                <i class="fa-solid fa-indian-rupee-sign" style="color:#10b981"></i>
+                Net Salary Trend — {{ current_year }}
+            </h4>
+            <canvas id="salChart" height="200"></canvas>
+        </div>
+ 
+    </div>
+ 
+ 
+    <!-- ═══════════════════════════════════════════
+         ADMIN SECTION  (all is_staff)
+         total_employees, present_today, half_day_today,
+         absent_today, overall_attendance, total_payroll,
+         avg_salary, recent_payrolls, dept_labels,
+         dept_counts, payroll_years, payroll_totals
+    ═══════════════════════════════════════════ -->
+    {% if request.user.is_superuser %}
+    <div id="adminReport" class="section-card" style="border-color:#e0e7ff;">
+ 
+        <!-- Title row -->
+        <div style="display:flex;align-items:center;justify-content:space-between;
+                    flex-wrap:wrap;gap:12px;margin-bottom:16px">
+            <h4 style="margin-bottom:0">
+                <i class="fa-solid fa-chart-pie" style="color:#4f46e5"></i>
+                Total Employee &amp; Payroll Report
+                <span style="font-size:10px;padding:2px 9px;border-radius:20px;
+                             background:#e0e7ff;color:#3730a3;font-weight:700;margin-left:8px;">
+                    {% if request.user.is_superuser %}Superuser{% else %}Staff{% endif %}
+                </span>
+            </h4>
+            {% if request.user.is_superuser %}
+            <div class="dl-row">
+                <a href="{% url 'payroll_report_download' %}?format=csv&filter_type={{ filter_type }}&month={{ filter_month }}&year={{ filter_year }}"
+                   class="dlbtn dlbtn-csv">
+                    <i class="fa-solid fa-file-csv"></i> CSV
+                </a>
+                <a href="{% url 'payroll_report_download' %}?format=xlsx&filter_type={{ filter_type }}&month={{ filter_month }}&year={{ filter_year }}"
+                   class="dlbtn dlbtn-xlsx">
+                    <i class="fa-solid fa-file-excel"></i> Excel
+                </a>
+            </div>
+            {% endif %}
+        </div>
+ 
+        <!-- Summary cards -->
+        <div class="summary-grid">
+            <div class="ssum">
+                <div class="val">{{ total_employees }}</div>
+                <div class="lbl">Total Employees</div>
+            </div>
+            <div class="ssum">
+                <div class="val" style="color:#10b981">{{ present_today }}</div>
+                <div class="lbl">Present Today</div>
+            </div>
+            <div class="ssum">
+                <div class="val" style="color:#f59e0b">{{ half_day_today }}</div>
+                <div class="lbl">Half Day Today</div>
+            </div>
+            <div class="ssum">
+                <div class="val" style="color:#e11d48">{{ absent_today }}</div>
+                <div class="lbl">Absent Today</div>
+            </div>
+            <div class="ssum">
+                <div class="val">{{ overall_attendance }}%</div>
+                <div class="lbl">Overall Attendance</div>
+            </div>
+            <div class="ssum">
+                <div class="val">&#8377;{{ total_payroll }}</div>
+                <div class="lbl">Total Payroll</div>
+            </div>
+            <div class="ssum">
+                <div class="val">&#8377;{{ avg_salary }}</div>
+                <div class="lbl">Avg Net Salary</div>
+            </div>
+        </div>
+ 
+        <hr class="section-divider">
+ 
+        <!-- Admin charts -->
+        <div class="charts-grid" style="margin-bottom:0">
+ 
+            <div class="chart-card" style="border-color:#f3f4f6">
+                <h4>
+                    <i class="fa-solid fa-users" style="color:#4f46e5"></i>
+                    Employees by Department
+                </h4>
+                <canvas id="deptChart" height="200"></canvas>
+            </div>
+ 
+            <div class="chart-card" style="border-color:#f3f4f6">
+                <h4>
+                    <i class="fa-solid fa-money-bill-trend-up" style="color:#10b981"></i>
+                    Yearly Payroll Trend (&#8377; Lakhs)
+                </h4>
+                <canvas id="payrollChart" height="200"></canvas>
+            </div>
+ 
+            <div class="chart-card" style="border-color:#f3f4f6">
+                <h4>
+                    <i class="fa-solid fa-clock" style="color:#f59e0b"></i>
+                    Today's Attendance Breakdown
+                </h4>
+                <canvas id="halfDayChart" height="200"></canvas>
+            </div>
+ 
+        </div>
+ 
+        <hr class="section-divider">
+ 
+        <!-- Payroll table header + search -->
+        <div style="display:flex;align-items:center;justify-content:space-between;
+                    flex-wrap:wrap;gap:10px;margin-bottom:12px"
+             class="table-header-row">
+            <h4 style="font-size:13px;margin:0;white-space:nowrap">
+                <i class="fa-solid fa-table-list" style="color:#6b7280"></i>
+                Recent Employee Payroll
+                <span id="rowCount" style="font-size:11px;color:#9ca3af;font-weight:400;margin-left:6px"></span>
+            </h4>
+ 
+            <div class="search-wrap">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input
+                    id="payrollSearch"
+                    type="text"
+                    placeholder="Search name or emp ID…"
+                    oninput="filterPayrollTable()"
+                >
+                <button id="clearSearch" onclick="clearPayrollSearch()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+ 
+        <!-- Payroll table
+             p.emp_id, p.full_name, p.designation, p.department,
+             p.present_days, p.half_days, p.unpaid_days,
+             p.basic_salary, p.total_deductions, p.net_salary
+        -->
+        <div class="table-wrap">
+            <table class="pay-table" id="payrollTable">
+                <thead>
+                    <tr>
+                        <th>Emp ID</th>
+                        <th>Employee</th>
+                        <th>Designation</th>
+                        {% comment %} <th>Dept</th> {% endcomment %}
+                        <th>Present</th>
+                        <th>Half Day</th>
+                        <th>Absent</th>
+                        <th>Basic</th>
+                        <th>Deduction</th>
+                        <th>Net Salary</th>
+                        {% comment %} <th>Status</th> {% endcomment %}
+                    </tr>
+                </thead>
+                <tbody id="payrollTbody">
+ 
+                    {% for p in recent_payrolls %}
+                    <tr class="pay-row"
+                        data-name="{{ p.full_name|lower }}"
+                        data-empid="{{ p.emp_id|lower }}">
+ 
+                        <td style="color:#6b7280;font-size:12px">{{ p.emp_id }}</td>
+ 
+                        <td style="font-weight:600;text-transform:capitalize">
+                            {{ p.full_name }}
+                        </td>
+ 
+                        <td style="color:#6b7280">{{ p.designation }}</td>
+ 
+                        {% comment %} <td style="color:#6b7280;font-size:12px">{{ p.department }}</td> {% endcomment %}
+ 
+                        <td style="color:#16a34a;font-weight:700">{{ p.present_days }}</td>
+ 
+                        <td style="color:#f59e0b;font-weight:700">{{ p.half_days }}</td>
+ 
+                        <td style="color:#e11d48;font-weight:700">{{ p.unpaid_days }}</td>
+ 
+                        <td>&#8377;{{ p.basic_salary }}</td>
+ 
+                        <td style="color:#e11d48;font-weight:600">
+                            &#8377;{{ p.total_deductions }}
+                        </td>
+ 
+                        <td style="font-weight:700;color:#1e3a8a">
+                            &#8377;{{ p.net_salary }}
+                        </td>
+ 
+                        {% comment %} <td>
+                            {% if p.half_days > 0 and p.unpaid_days == 0 %}
+                                <span class="badge badge-halfday">HALF DAY</span>
+                            {% elif p.half_days > 0 and p.unpaid_days > 0 %}
+                                <span class="badge badge-halfday">HALF DAY</span>
+                            {% elif p.unpaid_days > 0 %}
+                                <span class="badge badge-absent">ABSENT</span>
+                            {% else %}
+                                <span class="badge badge-present">PRESENT</span>
+                            {% endif %}
+                        </td> {% endcomment %}
+ 
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="11" style="text-align:center;color:#9ca3af;padding:28px">
+                            <i class="fa-solid fa-inbox me-2"></i>
+                            No payroll records for this period.
+                        </td>
+                    </tr>
+                    {% endfor %}
+ 
+                    <tr id="noResults">
+                        <td colspan="11">
+                            <i class="fa-solid fa-magnifying-glass me-2" style="color:#d1d5db"></i>
+                            No employees match <span id="searchTerm" style="font-weight:600;color:#374151"></span>
+                        </td>
+                    </tr>
+ 
+                </tbody>
+            </table>
+        </div>
+ 
+    </div>
+    {% endif %}
+ 
+</div><!-- /.dash -->
+ 
+ 
+<!-- ═══════════════════════════════════════════
+     CHART.JS
+═══════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+ 
+/* ── Data injected from Django context ── */
+const MONTHLY_ATT      = {{ monthly_att_data|safe }};
+const MONTHLY_SAL      = {{ monthly_sal_data|safe }};
+const MONTHLY_HALF_DAY = {{ monthly_half_day_data|safe }};
+const DEPT_LABELS      = {{ dept_labels|default:"[]"|safe }};
+const DEPT_COUNTS      = {{ dept_counts|default:"[]"|safe }};
+const PAY_YEARS        = {{ payroll_years|default:"[]"|safe }};
+const PAY_TOTALS       = {{ payroll_totals|default:"[]"|safe }};
+ 
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+ 
+/* ── Shared base options ── */
+const baseOpts = {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: { legend: { labels: { font: { size: 11 }, color: '#6b7280' } } },
+    scales: {
+        x: { ticks: { font: { size: 10 }, color: '#9ca3af' }, grid: { display: false } },
+        y: { ticks: { font: { size: 10 }, color: '#9ca3af' }, grid: { color: '#f3f4f6' } }
+    }
+};
+ 
+/* ════════════════════════════════════════
+   ATTENDANCE CHART
+   Left  Y-axis → Attendance %
+   Right Y-axis → Half-day count
+════════════════════════════════════════ */
+const attCanvas = document.getElementById('attChart');
+if (attCanvas) {
+    new Chart(attCanvas, {
+        type: 'bar',
+        data: {
+            labels: MONTHS,
+            datasets: [
+                {
+                    label: 'Attendance %',
+                    data: MONTHLY_ATT,
+                    backgroundColor: 'rgba(79,70,229,0.75)',
+                    borderRadius: 6, borderSkipped: false,
+                    yAxisID: 'yPct',
+                },
+                {
+                    label: 'Half Days',
+                    data: MONTHLY_HALF_DAY,
+                    backgroundColor: 'rgba(245,158,11,0.75)',
+                    borderRadius: 6, borderSkipped: false,
+                    yAxisID: 'yHalf',
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: true,
+            plugins: { legend: { labels: { font: { size: 11 }, color: '#6b7280' } } },
+            scales: {
+                x: { ticks: { font: { size: 10 }, color: '#9ca3af' }, grid: { display: false } },
+                yPct: {
+                    type: 'linear', position: 'left', min: 0, max: 100,
+                    ticks: { callback: v => v + '%', font: { size: 10 }, color: '#6366f1' },
+                    grid: { color: '#f3f4f6' }
+                },
+                yHalf: {
+                    type: 'linear', position: 'right', min: 0,
+                    ticks: { stepSize: 1, font: { size: 10 }, color: '#f59e0b' },
+                    grid: { drawOnChartArea: false }
+                }
+            }
+        }
+    });
+}
+ 
+/* ════════════════════════════════════════
+   SALARY CHART
+════════════════════════════════════════ */
+const salCanvas = document.getElementById('salChart');
+if (salCanvas) {
+    new Chart(salCanvas, {
+        type: 'line',
+        data: {
+            labels: MONTHS,
+            datasets: [{
+                label: 'Net Salary (₹ Lakhs)',
+                data: MONTHLY_SAL,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16,185,129,0.08)',
+                tension: 0.4, fill: true,
+                pointBackgroundColor: '#10b981', pointRadius: 4,
+            }]
+        },
+        options: baseOpts
+    });
+}
+ 
+/* ════════════════════════════════════════
+   ADMIN CHARTS  (all is_staff)
+════════════════════════════════════════ */
+{% if request.user.is_staff %}
+ 
+const PIE_COLORS = ['#4f46e5','#10b981','#f59e0b','#06b6d4','#e11d48','#8b5cf6','#ec4899'];
+ 
+/* Department doughnut */
+const deptCanvas = document.getElementById('deptChart');
+if (deptCanvas) {
+    new Chart(deptCanvas, {
+        type: 'doughnut',
+        data: {
+            labels: DEPT_LABELS,
+            datasets: [{
+                data: DEPT_COUNTS,
+                backgroundColor: PIE_COLORS,
+                borderWidth: 2, borderColor: '#fff',
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: { font: { size: 11 }, color: '#6b7280', padding: 12 }
+                }
+            }
+        }
+    });
+}
+ 
+/* Yearly payroll bar */
+const payrollCanvas = document.getElementById('payrollChart');
+if (payrollCanvas) {
+    new Chart(payrollCanvas, {
+        type: 'bar',
+        data: {
+            labels: PAY_YEARS,
+            datasets: [{
+                label: 'Total Payroll (₹ Lakhs)',
+                data: PAY_TOTALS,
+                backgroundColor: [
+                    'rgba(79,70,229,.75)',
+                    'rgba(16,185,129,.75)',
+                    'rgba(245,158,11,.75)',
+                    'rgba(6,182,212,.75)'
+                ],
+                borderRadius: 8, borderSkipped: false,
+            }]
+        },
+        options: { ...baseOpts, plugins: { legend: { display: false } } }
+    });
+}
+ 
+/* Today's attendance breakdown pie */
+const halfCanvas = document.getElementById('halfDayChart');
+if (halfCanvas) {
+    new Chart(halfCanvas, {
+        type: 'pie',
+        data: {
+            labels: ['Present', 'Half Day', 'Absent'],
+            datasets: [{
+                data: [
+                    {{ present_today|default:0 }},
+                    {{ half_day_today|default:0 }},
+                    {{ absent_today|default:0 }}
+                ],
+                backgroundColor: ['#10b981', '#f59e0b', '#e11d48'],
+                borderWidth: 2, borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { font: { size: 11 }, color: '#6b7280' }
+                }
+            }
+        }
+    });
+}
+ 
+{% endif %}
+ 
+ 
+/* ════════════════════════════════════════
+   FILTER HELPERS
+════════════════════════════════════════ */
+function toggleMonthFilter() {
+    const t = document.getElementById('filterType').value;
+    document.getElementById('filterMonth').style.display =
+        t === 'monthly' ? 'inline-block' : 'none';
+}
+ 
+function applyFilter() {
+    const type  = document.getElementById('filterType').value;
+    const month = document.getElementById('filterMonth').value;
+    const year  = document.getElementById('filterYear').value;
+    const url   = new URL(window.location.href);
+    url.searchParams.set('filter_type', type);
+    url.searchParams.set('month', month);
+    url.searchParams.set('year', year);
+    window.location.href = url.toString();
+}
+ 
+ 
+/* ════════════════════════════════════════
+   PAYROLL TABLE SEARCH
+════════════════════════════════════════ */
+function filterPayrollTable() {
+    const query      = document.getElementById('payrollSearch').value.trim().toLowerCase();
+    const rows       = document.querySelectorAll('.pay-row');
+    const clearBtn   = document.getElementById('clearSearch');
+    const noResults  = document.getElementById('noResults');
+    const searchTerm = document.getElementById('searchTerm');
+    const rowCount   = document.getElementById('rowCount');
+ 
+    let visible = 0;
+    if (clearBtn) clearBtn.style.display = query ? 'block' : 'none';
+ 
+    rows.forEach(row => {
+        const match =
+            (row.dataset.name  || '').includes(query) ||
+            (row.dataset.empid || '').includes(query);
+        row.style.display = match ? '' : 'none';
+        if (match) visible++;
+    });
+ 
+    if (noResults) {
+        noResults.style.display = (visible === 0 && query) ? 'table-row' : 'none';
+        if (searchTerm) searchTerm.textContent = `"${query}"`;
+    }
+ 
+    if (rowCount) {
+        rowCount.textContent = query
+            ? `(${visible} results)`
+            : `(${rows.length} employees)`;
+    }
+}
+ 
+function clearPayrollSearch() {
+    document.getElementById('payrollSearch').value = '';
+    filterPayrollTable();
+    document.getElementById('payrollSearch').focus();
+}
+ 
+ 
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+window.addEventListener('load', () => {
+    const rows    = document.querySelectorAll('.pay-row');
+    const rowCount = document.getElementById('rowCount');
+    if (rowCount) rowCount.textContent = `(${rows.length} employees)`;
+    toggleMonthFilter();
+});
+</script>
+{% endblock %}
+ 

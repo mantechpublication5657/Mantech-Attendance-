@@ -1,0 +1,751 @@
+/* =========================================================
+   ATTENDANCE DASHBOARD — attendance_page.css
+   FULL UPDATED VERSION WITH HALF DAY SUPPORT
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+
+  --bg-base:#050d1a;
+  --bg-panel:rgba(255,255,255,0.04);
+
+  --border:rgba(255,255,255,0.08);
+  --border-strong:rgba(255,255,255,0.14);
+
+  --accent-blue:#3b82f6;
+  --accent-cyan:#06b6d4;
+  --accent-green:#10b981;
+  --accent-red:#f43f5e;
+  --accent-amber:#f59e0b;
+  --accent-orange:#fb923c;
+  --accent-violet:#8b5cf6;
+
+  --text-primary:#f0f6ff;
+  --text-secondary:#7e97b8;
+  --text-muted:#405070;
+
+  --radius-sm:10px;
+  --radius-md:16px;
+  --radius-lg:24px;
+
+  --shadow-sm:0 2px 12px rgba(0,0,0,0.3);
+  --shadow-md:0 8px 32px rgba(0,0,0,0.4);
+
+  --transition:0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* =========================================================
+   RESET
+========================================================= */
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg-base);
+  color:var(--text-primary);
+  min-height:100vh;
+
+  background-image:
+    linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+
+  background-size:40px 40px;
+}
+
+/* =========================================================
+   WRAPPER
+========================================================= */
+
+.dashboard-wrapper{
+  max-width:1400px;
+  margin:auto;
+  padding:24px;
+}
+
+/* =========================================================
+   TOP SECTION
+========================================================= */
+
+.top-section{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:15px;
+  margin-bottom:25px;
+}
+
+.page-title h2{
+  font-family:'Syne',sans-serif;
+  font-size:38px;
+  font-weight:800;
+
+  background:linear-gradient(120deg,#fff,var(--accent-cyan));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.page-title p{
+  color:var(--text-secondary);
+  margin-top:5px;
+}
+
+.live-badge{
+  display:flex;
+  align-items:center;
+  gap:8px;
+
+  padding:10px 18px;
+
+  border-radius:30px;
+
+  background:rgba(16,185,129,0.15);
+
+  border:1px solid rgba(16,185,129,0.25);
+
+  color:#10b981;
+}
+
+.live-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#10b981;
+}
+
+/* =========================================================
+   FILTER CARD
+========================================================= */
+
+.filter-card{
+  background:var(--bg-panel);
+  border:1px solid var(--border);
+
+  padding:20px;
+
+  border-radius:var(--radius-lg);
+
+  margin-bottom:22px;
+}
+
+.filter-label{
+  margin-bottom:12px;
+  color:var(--text-secondary);
+  font-size:13px;
+}
+
+.filter-form{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.filter-form select,
+.filter-form button{
+
+  height:42px;
+  border:none;
+  border-radius:12px;
+}
+
+.filter-form select{
+  background:#0f172a;
+  color:white;
+
+  padding:0 14px;
+
+  border:1px solid rgba(255,255,255,0.1);
+}
+
+.filter-form button{
+
+  background:linear-gradient(135deg,#2563eb,#4f46e5);
+
+  color:white;
+
+  padding:0 18px;
+
+  cursor:pointer;
+}
+
+/* =========================================================
+   SUMMARY GRID
+========================================================= */
+
+.summary-grid{
+
+  display:grid;
+
+  grid-template-columns:repeat(5,1fr);
+
+  gap:12px;
+
+  margin-bottom:25px;
+}
+
+.summary-card{
+
+  position:relative;
+
+  overflow:hidden;
+
+  border-radius:18px;
+
+  padding:16px;
+
+  min-height:120px;
+
+  transition:0.3s;
+}
+
+.summary-card:hover{
+  transform:translateY(-3px);
+}
+
+.summary-card .card-icon{
+
+  width:38px;
+  height:38px;
+
+  border-radius:10px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:rgba(255,255,255,0.15);
+
+  margin-bottom:10px;
+
+  font-size:18px;
+}
+
+.summary-card h2{
+
+  font-size:30px;
+
+  margin-bottom:4px;
+
+  font-family:'Syne',sans-serif;
+}
+
+.summary-card p{
+
+  font-size:12px;
+
+  opacity:0.85;
+}
+
+.summary-card .trend{
+
+  position:absolute;
+
+  bottom:12px;
+  right:14px;
+
+  font-size:10px;
+
+  opacity:0.7;
+}
+
+/* =========================================================
+   CARD COLORS
+========================================================= */
+
+.green-card{
+  background:linear-gradient(135deg,#064e3b,#047857);
+}
+
+.red-card{
+  background:linear-gradient(135deg,#4c0519,#9f1239);
+}
+
+.yellow-card{
+  background:linear-gradient(135deg,#451a03,#b45309);
+}
+
+.orange-card{
+  background:linear-gradient(135deg,#431407,#c2410c);
+}
+
+.purple-card{
+  background:linear-gradient(135deg,#4c1d95,#7e22ce,#8b5cf6);
+}
+
+/* =========================================================
+   GRID LAYOUT
+========================================================= */
+
+.grid-layout{
+  display:grid;
+  grid-template-columns:1fr 1.3fr;
+  gap:20px;
+  margin-bottom:25px;
+}
+
+/* =========================================================
+   SECTION CARD
+========================================================= */
+
+.section-card,
+.table-card{
+
+  background:var(--bg-panel);
+
+  border:1px solid var(--border);
+
+  border-radius:20px;
+
+  padding:22px;
+
+  box-shadow:var(--shadow-md);
+}
+
+.section-card h3,
+.table-card h3{
+
+  margin-bottom:18px;
+
+  font-family:'Syne',sans-serif;
+}
+
+/* =========================================================
+   CALENDAR
+========================================================= */
+
+.calendar{
+
+  display:grid;
+
+  grid-template-columns:repeat(7,1fr);
+
+  gap:6px;
+}
+
+.day-name{
+
+  text-align:center;
+
+  padding:10px 0;
+
+  font-size:11px;
+
+  color:var(--text-secondary);
+
+  font-weight:700;
+}
+
+.calendar-day{
+
+  min-height:58px;
+
+  border-radius:10px;
+
+  padding:8px;
+
+  background:rgba(255,255,255,0.03);
+
+  border:1px solid transparent;
+
+  transition:0.3s;
+}
+
+.calendar-day:hover{
+  background:rgba(255,255,255,0.07);
+}
+
+.day-number{
+  font-size:13px;
+  font-weight:700;
+}
+
+/* =========================================================
+   CALENDAR STATUS COLORS
+========================================================= */
+
+.calendar-day.present{
+  background:rgba(16,185,129,0.20);
+  border:1px solid rgba(16,185,129,0.45);
+}
+
+.calendar-day.present .day-number{
+  color:#6ee7b7;
+}
+
+.calendar-day.absent{
+  background:rgba(244,63,94,0.18);
+  border:1px solid rgba(244,63,94,0.45);
+}
+
+.calendar-day.absent .day-number{
+  color:#fda4af;
+}
+
+.calendar-day.late{
+  background:rgba(245,158,11,0.18);
+  border:1px solid rgba(245,158,11,0.45);
+}
+
+.calendar-day.late .day-number{
+  color:#fcd34d;
+}
+
+.calendar-day.leave{
+  background:rgba(59,130,246,0.18);
+  border:1px solid rgba(59,130,246,0.45);
+}
+
+.calendar-day.leave .day-number{
+  color:#93c5fd;
+}
+
+/* =========================================================
+   HALF DAY FIX
+========================================================= */
+
+.calendar-day.half-day{
+  background:rgba(139,92,246,0.25) !important;
+  border:1px solid rgba(139,92,246,0.55) !important;
+}
+
+.calendar-day.half-day .day-number{
+  color:#d8b4fe !important;
+  font-weight:700;
+}
+
+/* =========================================================
+   Sunday DAY FIX
+========================================================= */
+
+.calendar-day.sunday{
+  background:rgba(150, 246, 72, 0.25) !important;
+  border:1px solid rgba(150, 246, 72, 0.55) !important;
+}
+
+.calendar-day.sunday .day-number{
+  color:#9ae6b4 !important;
+  font-weight:700;
+}
+
+/* =========================================================
+   TODAY
+========================================================= */
+
+.calendar-day.today-highlight{
+  box-shadow:0 0 0 2px rgba(6,182,212,0.5);
+}
+
+.calendar-day.empty{
+  background:transparent;
+  border:none;
+}
+
+/* =========================================================
+   LEGEND
+========================================================= */
+
+.cal-legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:20px;
+}
+
+.cal-legend-item{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-size:12px;
+}
+
+.cal-legend-dot{
+  width:11px;
+  height:11px;
+  border-radius:4px;
+}
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.table-responsive{
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:700px;
+}
+
+thead tr{
+  background:rgba(59,130,246,0.08);
+}
+
+th{
+
+  padding:14px;
+
+  color:var(--accent-cyan);
+
+  font-size:11px;
+
+  text-transform:uppercase;
+}
+
+td{
+  padding:14px;
+  text-align:center;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  color:var(--text-secondary);
+}
+
+td:first-child{
+  text-align:left;
+  color:white;
+  font-weight:600;
+}
+
+/* =========================================================
+   STATUS BADGES
+========================================================= */
+
+.status-badge{
+
+  display:inline-flex;
+
+  align-items:center;
+
+  gap:6px;
+
+  padding:6px 12px;
+
+  border-radius:30px;
+
+  font-size:11px;
+
+  font-weight:700;
+
+  text-transform:uppercase;
+}
+
+.status-badge::before{
+
+  content:'';
+
+  width:6px;
+  height:6px;
+
+  border-radius:50%;
+}
+
+/* PRESENT */
+
+.present-badge{
+  background:rgba(16,185,129,0.16);
+  color:#6ee7b7;
+  border:1px solid rgba(16,185,129,0.3);
+}
+
+.present-badge::before{
+  background:#10b981;
+}
+
+/* ABSENT */
+
+.absent-badge{
+  background:rgba(244,63,94,0.16);
+  color:#fda4af;
+  border:1px solid rgba(244,63,94,0.3);
+}
+
+.absent-badge::before{
+  background:#f43f5e;
+}
+
+/* LATE */
+
+.late-badge{
+  background:rgba(245,158,11,0.16);
+  color:#fcd34d;
+  border:1px solid rgba(245,158,11,0.3);
+}
+
+.late-badge::before{
+  background:#f59e0b;
+}
+
+/* LEAVE */
+
+.leave-badge{
+  background:rgba(59,130,246,0.16);
+  color:#93c5fd;
+  border:1px solid rgba(59,130,246,0.3);
+}
+
+.leave-badge::before{
+  background:#3b82f6;
+}
+
+/* =========================================================
+   HALF DAY BADGE FIX
+========================================================= */
+
+.half-day-badge{
+  background:rgba(139,92,246,0.18) !important;
+  color:#d8b4fe !important;
+  border:1px solid rgba(139,92,246,0.4) !important;
+}
+
+.half-day-badge::before{
+  background:#8b5cf6;
+}
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.empty-state{
+  padding:50px 20px;
+  text-align:center;
+}
+
+.empty-state .icon{
+  font-size:40px;
+  margin-bottom:10px;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:1200px){
+
+  .summary-grid{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .grid-layout{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:768px){
+
+  .summary-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .summary-card{
+    min-height:110px;
+    padding:14px;
+  }
+
+  .summary-card h2{
+    font-size:24px;
+  }
+
+  .dashboard-wrapper{
+    padding:16px;
+  }
+
+  .section-card,
+  .table-card{
+    padding:16px;
+  }
+}
+
+@media(max-width:520px){
+
+  .summary-grid{
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+  }
+
+  .summary-card{
+    min-height:100px;
+  }
+
+  .summary-card h2{
+    font-size:20px;
+  }
+
+  .summary-card p{
+    font-size:10px;
+  }
+
+  .calendar-day{
+    min-height:44px;
+    padding:5px;
+  }
+
+  .day-number{
+    font-size:11px;
+  }
+
+  .filter-form{
+    flex-direction:column;
+  }
+
+  .filter-form select,
+  .filter-form button{
+    width:100%;
+  }
+}
+
+/* ================================
+   HALF DAY CALENDAR COLOR
+================================ */
+
+.calendar-day.half-day{
+  background: rgba(139, 92, 246, 0.20) !important;
+  border: 1px solid rgba(139, 92, 246, 0.45) !important;
+}
+
+.calendar-day.half-day .day-number{
+  color: #c4b5fd !important;
+  font-weight: 700;
+}
+
+
+/* ================================
+   HALF DAY STATUS BADGE
+================================ */
+
+.half-day-badge{
+  background: rgba(139, 92, 246, 0.16) !important;
+  color: #c4b5fd !important;
+  border: 1px solid rgba(139, 92, 246, 0.35) !important;
+}
+
+.half-day-badge::before{
+  background: #8b5cf6 !important;
+}
+
+
+/* ================================
+   HALF DAY SUMMARY CARD
+================================ */
+
+.purple-card{
+  background: linear-gradient(
+    135deg,
+    #3b0764 0%,
+    #5b21b6 60%,
+    #7c3aed 100%
+  ) !important;
+
+  border-color: rgba(139,92,246,0.35) !important;
+
+  box-shadow: 0 8px 32px rgba(139,92,246,0.25) !important;
+}
+
+.purple-card:hover{
+  box-shadow: 0 16px 48px rgba(139,92,246,0.4) !important;
+}

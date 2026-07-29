@@ -1,0 +1,58 @@
+<h4 style="font-size:13px;margin-bottom:10px">
+            <i class="fa-solid fa-table-list" style="color:#6b7280"></i>
+            Recent Employee Payroll
+        </h4>
+        
+        <div class = "salary-wrap" style="overflow-x:auto">
+            <div class="table-wrap">
+                <table class="pay-table">
+                    <thead>
+                        <tr>
+                            <th>Emp ID</th>
+                            <th>Employee</th>
+                            {% comment %} <th>Department</th> {% endcomment %}
+                            <th>Designation</th>
+                            <th>Basic</th>
+                            <th>HRA</th>
+                            <th>DA</th>
+                            <th>Bonus</th>
+                            {% comment %} <th>Manual Ded.</th> {% endcomment %}
+                            <th>Absence Ded.</th>
+                            {% comment %} <th>Sunday Cut</th> {% endcomment %}
+                            <th>Total Ded.</th>
+                            <th>Net Salary</th>
+                            <th>Period</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in recent_payrolls %}
+                        <tr>
+                            <td style="color:#6b7280;font-size:12px">{{ p.emp_id }}</td>
+                            <td style="font-weight:600; text-transform:capitalize;">{{ p.full_name }}</td>
+                            {% comment %} <td>{{ p.department }}</td> {% endcomment %}
+                            <td style="color:#6b7280">{{ p.designation }}</td>
+                            <td>&#8377;{{ p.basic_salary }}</td>
+                            <td>&#8377;{{ p.hra }}</td>
+                            <td>&#8377;{{ p.da }}</td>
+                            <td style="color:#16a34a">&#8377;{{ p.bonus }}</td>
+                            {% comment %} <td style="color:#e11d48">&#8377;{{ p.deductions }}</td> {% endcomment %}
+                            <td style="color:#e11d48">
+                                &#8377;{{ p.absence_deduction }}
+                                <span style="font-size:10px;color:#9ca3af">({{ p.unpaid_days }}d)</span>
+                            </td> 
+                            {% comment %} <td style="color:#e11d48">&#8377;{{ p.sunday_cut }}</td> {% endcomment %}
+                            <td style="color:#e11d48;font-weight:600">&#8377;{{ p.total_deductions }}</td>
+                            <td style="font-weight:700;color:#1e3a8a">&#8377;{{ p.net_salary }}</td>
+                            <td style="color:#6b7280;font-size:12px">{{ p.month_year }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="14" style="text-align:center;color:#9ca3af;padding:24px">
+                                <i class="fa-solid fa-inbox me-2"></i>No payroll records for this period.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>

@@ -1,0 +1,312 @@
+{% extends 'layouts/main_layout.html' %}
+{% load static %}
+
+{% block title %}
+Convert Leave
+{% endblock %}
+
+{% block page_content %}
+
+<style>
+
+    .mhrms-leave-wrapper{
+        padding: 25px;
+    }
+
+    .mhrms-leave-card{
+        background: #ffffff;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: none;
+    }
+
+    .mhrms-leave-header{
+        background: linear-gradient(
+            135deg,
+            #0d6efd,
+            #0b5ed7
+        );
+
+        padding: 25px;
+        color: white;
+    }
+
+    .mhrms-leave-title{
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .mhrms-leave-subtitle{
+        opacity: 0.9;
+        font-size: 15px;
+    }
+
+    .mhrms-employee-box{
+        margin-top: 15px;
+        background: rgba(255,255,255,0.15);
+        padding: 12px 18px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .mhrms-card-body{
+        padding: 25px;
+    }
+
+    .mhrms-table{
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 14px;
+    }
+
+    .mhrms-table thead{
+        background: #0d6efd;
+        color: white;
+    }
+
+    .mhrms-table th{
+        padding: 16px;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+        border: none;
+    }
+
+    .mhrms-table td{
+        padding: 16px;
+        text-align: center;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f1f1;
+        font-size: 14px;
+    }
+
+    .mhrms-table tbody tr{
+        transition: 0.3s;
+    }
+
+    .mhrms-table tbody tr:hover{
+        background: #f8fbff;
+    }
+
+    .mhrms-absent-badge{
+        background: #ffe5e5;
+        color: #dc3545;
+        padding: 8px 14px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .mhrms-convert-btn{
+        border: none;
+        background: linear-gradient(
+            135deg,
+            #198754,
+            #157347
+        );
+
+        color: white;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .mhrms-convert-btn:hover{
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(25,135,84,0.25);
+    }
+
+    .mhrms-empty-box{
+        background: #f8f9fa;
+        border-radius: 16px;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    .mhrms-empty-icon{
+        font-size: 60px;
+        color: #adb5bd;
+        margin-bottom: 15px;
+    }
+
+    .mhrms-empty-text{
+        color: #6c757d;
+        font-size: 16px;
+        margin: 0;
+    }
+
+    .mhrms-alert{
+        border-radius: 12px;
+        padding: 14px 18px;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    @media(max-width:768px){
+
+        .mhrms-leave-wrapper{
+            padding: 15px;
+        }
+
+        .mhrms-leave-title{
+            font-size: 22px;
+        }
+
+        .mhrms-card-body{
+            padding: 15px;
+        }
+
+        .mhrms-table th,
+        .mhrms-table td{
+            padding: 12px;
+            font-size: 13px;
+        }
+
+        .mhrms-convert-btn{
+            width: 100%;
+        }
+    }
+
+</style>
+
+<div class="mhrms-leave-wrapper">
+
+    <div class="mhrms-leave-card">
+
+        <!-- HEADER -->
+        <div class="mhrms-leave-header">
+
+            <div class="mhrms-leave-title">
+                Convert Absent To Leave
+            </div>
+
+            <div class="mhrms-leave-subtitle">
+                Manage employee absent attendance records and convert them into leave requests.
+            </div>
+
+            <div class="mhrms-employee-box">
+
+                <i class="fa-solid fa-user"></i>
+
+                <span>
+                    Employee :
+                    <strong style="text-transform: capitalize;">
+                        {{ employee.get_full_name|default:employee.username }}
+                    </strong>
+                </span>
+
+            </div>
+
+        </div>
+
+        <!-- BODY -->
+        <div class="mhrms-card-body">
+
+            {% if absent_records %}
+
+            <div class="table-responsive">
+
+                <table class="mhrms-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Date</th>
+                            <th>Day</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for attendance in absent_records %}
+
+                        <tr>
+
+                            <td>
+                                {{ attendance.date }}
+                            </td>
+
+                            <td>
+                                {{ attendance.date|date:"l" }}
+                            </td>
+
+                            <td>
+
+                                <span class="mhrms-absent-badge">
+                                    Absent
+                                </span>
+   
+                            </td>
+
+                            <td>
+
+                                <form method="POST">
+
+                                    {% csrf_token %}
+
+                                    <input
+                                        type="hidden"
+                                        name="attendance_id"
+                                        value="{{ attendance.id }}"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="mhrms-convert-btn"
+                                    >
+
+                                        <i class="fa-solid fa-arrow-rotate-right"></i>
+
+                                        Convert To Leave
+
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <div class="mhrms-empty-box">
+
+                <div class="mhrms-empty-icon">
+                    <i class="fa-regular fa-circle-check"></i>
+                </div>
+
+                <p class="mhrms-empty-text">
+                    No absent attendance records found.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

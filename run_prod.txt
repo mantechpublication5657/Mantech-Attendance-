@@ -1,0 +1,35 @@
+# ---------------------------------------------------
+# Collect All Static Files (CSS, JS, Images)
+# ---------------------------------------------------
+
+python manage.py collectstatic
+
+
+# ---------------------------------------------------
+# Create and Apply Database Migrations
+# (Reflect Model / Schema Changes in Database)
+# ---------------------------------------------------
+
+python manage.py makemigrations
+python manage.py migrate
+
+
+# ---------------------------------------------------
+# Run Django HRMS in Production Mode using Waitress
+# Accessible Across Local Network (LAN)
+# ---------------------------------------------------
+
+waitress-serve --host=0.0.0.0 --port=8000 core.wsgi:application
+
+# ---------------------------------------------------
+# Run Django HRMS in Production Link
+# ---------------------------------------------------
+
+http://192.168.1.38:8000/
+
+
+# For start server automatically use this process
+# add the start_server.bat file in startup 
+#step 1: wind+r and type shell:startup
+#step 2: add the start_server.bat file 
+

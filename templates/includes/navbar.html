@@ -1,0 +1,81 @@
+<!-- Topbar -->
+ {% load static %}
+        <header class="topbar">
+            <button class="topbar-menu-btn" onclick="toggleSidebar()">
+                <i class="bi bi-list"></i>
+            </button>
+            <div class="topbar-greeting">
+                <br>
+                <div style="display:flex;align-items:center; gap:0.5rem;">
+                    <h2 id = 'greeting-text'>Good Morning, </h2><h2 style = "text-transform: capitalize; color: #38bdf8">{{ request.user.username|default:"User" }}</span>
+                </div>
+                <p id="live-date">15 May 2026</p>
+
+            </div>
+            {% if request.user.is_authenticated %}
+            <div class="topbar-actions">
+                {% if request.user.is_staff %}
+                    <div class="icon-btn">
+                    <a href="{% url 'employee_list' %}" class="icon-btn">
+                        <i class="bi bi-search"></i>
+                    </a>
+                    </div>
+                {% endif %}
+
+
+                <!-- Bell Notification for grievances -->
+                {% include "grievances/_navbar_bell.html" %}
+
+{% comment %}                 
+                <div class="icon-btn">
+                    <i class="bi bi-question-circle"></i>
+                </div>  {% endcomment %}
+                <div class="">
+                    <a href="{% url 'employee_detail' request.user.id %}" 
+                            style="display:inline-flex;align-items:center;justify-content:center;
+                            text-decoration:none;border-radius:50%;overflow:hidden;
+                            width:48px;height:48px;transition:transform 0.3s ease;">
+                        {% if request.user.employee_profile.profile_picture %}
+                            <img src="{{ request.user.employee_profile.profile_picture.url }}" 
+                                id="previewImage"
+                                style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">
+                        {% elif not request.user.employee_profile.profile_picture %}
+                                <span class="avatar-placeholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background-color:#e5e7eb;color:#6b7280;font-size:1.5rem;font-weight:bold;">
+                                    {{ request.user.username|default:"A"|first|upper }}
+                                </span>
+                        {% else %}
+                            <img src="{% static 'images/default_profile.png' %}" 
+                                id="previewImage"
+                                style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">
+                        {% endif %}
+                    </a>
+                </div>
+
+            </div>
+            {% endif %}
+        </header>
+          
+<!-- 🚨 MESSAGE POPUP AREA -->
+<div id="message-container" class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow message-box" style="background: linear-gradient(135deg, var(--blue), var(--cyan)); color: white;">
+                {{ message }}
+                <button type="button"class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    <script>
+        // Auto-dismiss messages after 10 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('#message-container .alert');
+            alerts.forEach(alert => {
+                alert.classList.remove('show'); // triggers Bootstrap fade out
+                alert.classList.add('fade');    // ensure fade transition
+                setTimeout(() => alert.remove(), 500); // remove from DOM after fade
+            });
+        }, 5000); // 10 seconds
+    </script>
+
+</div>

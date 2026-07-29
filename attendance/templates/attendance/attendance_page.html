@@ -1,0 +1,501 @@
+{% extends 'layouts/main_layout.html' %}
+
+{% block title %}Attendance Dashboard{% endblock %}
+{% load static %}
+{% load attendance_tags %}
+
+{% block page_content %}
+<style>
+    .download-wrapper{
+        display: flex;
+        justify-content: flex-end;
+        margin: 20px 0;
+    }
+
+    .download-btn{
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: white;
+
+        padding: 12px 22px;
+        border-radius: 12px;
+
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 15px;
+
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+
+        transition: all 0.3s ease;
+    }
+
+    .download-btn:hover{
+        transform: translateY(-2px);
+
+        background: linear-gradient(135deg, #1d4ed8, #1e40af);
+
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+    }
+
+    .download-icon{
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 768px){
+
+        .download-wrapper{
+            justify-content: center;
+        }
+
+        .download-btn{
+            width: 100%;
+            justify-content: center;
+            font-size: 14px;
+            padding: 14px 18px;
+        }
+    }
+    .calendar-day {
+    position: relative;
+    /* remove overflow: hidden from here */
+  }
+
+  .day-remark {
+      position: absolute;
+      bottom: 4px;
+      left: 0;
+      right: 0;
+      font-size: 9px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 4px;
+      opacity: 0.85;
+      cursor: pointer;
+      z-index: 1;
+  }
+
+  .day-remark {
+      overflow: visible;
+      white-space: normal;
+      z-index: 1;
+      background: #1e293b;
+      color: #fff !important;
+      padding: 4px 8px;
+      border-radius: 6px;
+      width: max-content;
+      max-width: 180px;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -5px;
+      opacity: 1;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      text-align: center;
+      line-height: 1.4;
+  }
+</style>
+
+<!-- External Libraries -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Separated Stylesheet -->
+<link rel="stylesheet" href="{% static 'attendance/attendance_page.css' %}">
+
+<div class="dashboard-wrapper">
+
+  <!-- ── TOP SECTION ── -->
+  <div class="top-section">
+
+    <div class="page-title">
+      <h2>Attendance Dashboard</h2>
+      <p>{{current_date}} &mdash; {{ current_time }}</p>
+    </div>
+
+    <!-- LIVE STATUS & ACTIONS -->
+    <div class="live-badge">
+
+    <span class="live-dot"></span>
+    <span class="live-text d-inline-flex align-items-center gap-1">
+      ATTENDANCE
+      <i class="bi bi-arrow-down"></i>
+    </span>
+</div>
+  </div>
+  
+  <div class = 'dashboard-wrap'>
+    {% include "attendance/attendance_btn.html" %}
+  </div><br>
+
+  <!-- ── FILTERS ── -->
+  <div class="filter-card">
+
+    <div class="filter-label">&#x1F50D; Filter Records</div>
+
+    <form method="GET" class="filter-form">
+
+      <select name="month">
+    <option value="">All Months</option>
+    <option value="1"  {% if selected_month == '1'  %}selected{% endif %}>January</option>
+    <option value="2"  {% if selected_month == '2'  %}selected{% endif %}>February</option>
+    <option value="3"  {% if selected_month == '3'  %}selected{% endif %}>March</option>
+    <option value="4"  {% if selected_month == '4'  %}selected{% endif %}>April</option>
+    <option value="5"  {% if selected_month == '5'  %}selected{% endif %}>May</option>
+    <option value="6"  {% if selected_month == '6'  %}selected{% endif %}>June</option>
+    <option value="7"  {% if selected_month == '7'  %}selected{% endif %}>July</option>
+    <option value="8"  {% if selected_month == '8'  %}selected{% endif %}>August</option>
+    <option value="9"  {% if selected_month == '9'  %}selected{% endif %}>September</option>
+    <option value="10" {% if selected_month == '10' %}selected{% endif %}>October</option>
+    <option value="11" {% if selected_month == '11' %}selected{% endif %}>November</option>
+    <option value="12" {% if selected_month == '12' %}selected{% endif %}>December</option>
+</select>
+
+<select name="status">
+    <option value=""         {% if selected_status == '' %}selected{% endif %}>All Status</option>
+    <option value="Present"  {% if selected_status == 'Present'  %}selected{% endif %}>&#x1F7E2; Present</option>
+    <option value="Absent"   {% if selected_status == 'Absent'   %}selected{% endif %}>&#x1F534; Absent</option>
+    <option value="Late"     {% if selected_status == 'Late'     %}selected{% endif %}>&#x1F7E1; Late</option>
+    <option value="Leave"    {% if selected_status == 'Leave'    %}selected{% endif %}>&#x1F535; Leave</option>
+    <option value="Half Day" {% if selected_status == 'Half Day' %}selected{% endif %}>&#x1F7E0; Half Day</option>
+</select>
+
+      <button type="submit">
+        &#x2192; Apply Filters
+      </button>
+
+    </form>
+
+  </div>
+
+  <!-- ── SUMMARY CARDS ── -->
+  <div class="summary-grid">
+
+    <div class="summary-card green-card">
+      <div class="card-icon">&#x2705;</div>
+      <h2>{{ present_count }} </h2>
+      <p>Present Days {% if total_count > 0 %}&nbsp;&nbsp; (Total &mdash; {{total_count}}){% endif %}</p>
+      <div class="trend">{{ current_month_name }} &mdash; {{ current_year }}</div>
+    </div>
+
+    <div class="summary-card red-card">
+      <div class="card-icon">&#x274C;</div>
+      <h2>{{ absent_count }}</h2>
+      <p>Absent Days</p>
+      <div class="trend">{{ current_month_name }} &mdash; {{ current_year }}</div>
+    </div>
+
+    <div class="summary-card yellow-card">
+      <div class="card-icon">&#x23F0;</div>
+      <h2>{{ late_count }}</h2>
+      <p>Late Arrivals</p>
+      <div class="trend">{{ current_month_name }} &mdash; {{ current_year }}</div>
+    </div>
+
+    <div class="summary-card orange-card">
+      <div class="card-icon">&#x1F3D6;</div>
+      <h2>{{ leave_count }}</h2>
+      <p>Leave Days</p>
+      <div class="trend">{{ current_month_name }} &mdash; {{ current_year }}</div>
+    </div>
+
+    <div class="summary-card purple-card">
+      <div class="card-icon">&#x1F7E0;</div>
+      <h2>{{ half_day_count }}</h2>
+      <p>Half Days</p>
+      <div class="trend">{{ current_month_name }} &mdash; {{ current_year }}</div>
+    </div>
+
+  </div>
+
+  <!-- ── CHART + CALENDAR ── -->
+  <div class="grid-layout">
+
+    <!-- Donut Chart -->
+    <div class="section-card">
+      <h3>{{ current_month_name }} {{ current_year }}  Analytics</h3>
+      <div class="chart-wrapper">
+        <canvas id="attendanceChart" style="max-height:320px;"></canvas>
+      </div>
+    </div>
+
+    <!-- Monthly Calendar -->
+    <div class="section-card">
+      <h3>{{ current_month_name }} {{ current_year }} Calendar</h3>
+
+      <div class="calendar">
+
+        <!-- Day headers -->
+        <div class="day-name">Sun</div>
+        <div class="day-name">Mon</div>
+        <div class="day-name">Tue</div>
+        <div class="day-name">Wed</div>
+        <div class="day-name">Thu</div>
+        <div class="day-name">Fri</div>
+        <div class="day-name">Sat</div>
+
+        {% for week in month_days %}
+          {% for day in week %}
+
+            {% if day == 0 %}
+
+              <div class="calendar-day empty"></div>
+
+            {% else %}
+
+              <div class="calendar-day
+                {% if day in present_days %}present
+                {% elif day in absent_days %}absent
+                {% elif day in late_days %}late
+                {% elif day in leave_days %}leave
+                {% elif day in half_day_days %}half-day
+                {% elif day in sunday_days %}sunday
+                {% endif %}
+                {% if day == today.day %}today-highlight{% endif %}
+              ">
+                <div class="day-number">{{ day }}</div>
+
+                {% if day in leave_days %}
+                  <div class="day-remark" data-remark="{% if leave_remarks|get_item:day %}{{ leave_remarks|get_item:day }}{% else %}Leave{% endif %}">
+                    {% if leave_remarks|get_item:day %}
+                      {{ leave_remarks|get_item:day }}
+                    {% else %}
+                      Leave
+                    {% endif %}
+                  </div>
+                {% endif %}
+
+                {% if day in sunday_days %}
+                  <div class="day-remark">
+                      Sunday 
+                  </div>
+                {% endif %}
+
+              </div>
+
+            {% endif %}
+
+          {% endfor %}
+        {% endfor %}
+
+      </div><!-- /.calendar -->
+
+      <!-- Legend -->
+      <div class="cal-legend">
+        <div class="cal-legend-item">
+          <div class="cal-legend-dot" style="background:rgba(16,185,129,0.6);border:1px solid rgba(16,185,129,0.5);"></div>
+          Present
+        </div>
+        <div class="cal-legend-item">
+          <div class="cal-legend-dot" style="background:rgba(244,63,94,0.6);border:1px solid rgba(244,63,94,0.5);"></div>
+          Absent
+        </div>
+        <div class="cal-legend-item">
+          <div class="cal-legend-dot" style="background:rgba(245,158,11,0.6);border:1px solid rgba(245,158,11,0.5);"></div>
+          Late
+        </div>
+        <div class="cal-legend-item">
+          <div class="cal-legend-dot" style="background:rgba(59,130,246,0.6);border:1px solid rgba(59,130,246,0.5);"></div>
+          Leave
+        </div>
+        <div class="cal-legend-item">
+          <div class="cal-legend-dot" style="background:rgba(129,72,246,0.6);border:1px solid rgba(129,72,246,0.5);"></div>
+          Half Day
+        </div>
+        <div class="cal-legend-item">
+          <div class="cal-legend-dot" style="background:rgba(150, 246, 72, 0.6);border:1px solid rgba(150, 246, 72, 0.5);"></div>
+          Sunday
+        </div>
+      </div>
+
+    </div><!-- /.section-card calendar -->
+
+  </div><!-- /.grid-layout -->
+
+  <!-- ── ATTENDANCE HISTORY TABLE ── -->
+  <div class="table-card">
+
+    <!-- Download PDF Report Button -->
+    <div class="download-wrapper">
+
+        <a href="{% url 'download_attendance_pdf' employee_profile.user.id %}?month={{ current_month }}&year={{ current_year }}"
+          class="download-btn"
+          style="padding: 8px 14px;
+                  font-size: 13px;
+                  border-radius: 8px;
+                  gap: 6px; margin-right:10px;">
+            <i class="fa-solid fa-download" style="font-size: 13px;"></i>
+            <span>Attendance Report</span>
+        </a>
+
+        {# Salary Slip — only visible after the month has ended #}
+        {% if month_ended and payroll %}
+            <a href="{% url 'download_salary_slip' employee_profile.user.id current_month current_year %}"
+            class="download-btn"
+            style="background: linear-gradient(135deg, #16a34a, #15803d);
+                    box-shadow: 0 4px 10px rgba(22,163,74,0.25);
+                    padding: 8px 14px;
+                    font-size: 13px;
+                    border-radius: 8px;
+                    gap: 6px;">
+              <i class="fa-solid fa-download" style="font-size: 13px;"></i>
+              <i class="fa-solid fa-money-bill" style="font-size: 13px;"></i>
+              <span>Salary Slip</span>
+          </a>
+        {% endif %}
+
+    </div>
+    <h3>Attendance History of <span style = "text-transform: capitalize;">{{ employee_profile.user.first_name }} {{ employee_profile.user.last_name }}</span></h3>
+
+    <div class="table-responsive">
+
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Day</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Status</th>
+            <th>IP Address</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          {% for attendance in attendance_history %}
+          <tr>
+
+            <td>{{ attendance.date }}</td>
+
+            <td>{{ attendance.date|date:"l" }}</td>
+
+            <td>{{ attendance.check_in|default:"&mdash;" }}</td>
+
+            <td>{{ attendance.check_out|default:"&mdash;" }}</td>
+
+            <td>
+              <span class="status-badge
+                {% if attendance.status == 'Present' %}present-badge
+                {% elif attendance.status == 'Absent' %}absent-badge
+                {% elif attendance.status == 'Late' %}late-badge
+                {% elif attendance.status == 'Leave' %}leave-badge
+                {% elif attendance.status == 'Half Day' %}half-day-badge
+                {% endif %}
+              ">
+
+                {% if attendance.status == 'Leave' and attendance.remarks %}
+                  {{ attendance.remarks }}
+                {% else %}
+                  {{ attendance.status }}
+                {% endif %}
+              </span>
+            </td>
+
+            <td>{{ attendance.ip_address|default:"&mdash;" }}</td>
+
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <div class="icon">&#x1F4C5;</div>
+                <p>No attendance records found for this period.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+
+        </tbody>
+
+      </table>
+
+    </div><!-- /.table-responsive -->
+
+  </div><!-- /.table-card -->
+
+</div><!-- /.dashboard-wrapper -->
+
+<!-- ── CHART SCRIPT ── -->
+<script>
+(function () {
+  const ctx = document.getElementById('attendanceChart');
+  if (!ctx) return;
+
+  const data = {
+    present: {{ present_count }},
+    absent:  {{ absent_count }},
+    late:    {{ late_count }},
+    leave:   {{ leave_count }},
+    half_day: {{ half_day_count }},
+  };
+
+  const total = data.present + data.absent + data.late + data.leave + data.half_day;
+
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Present', 'Absent', 'Late', 'Leave', 'Half Day'],
+      datasets: [{
+        data: [data.present, data.absent, data.late, data.leave, data.half_day],
+        backgroundColor: [
+          'rgba(16,185,129,0.85)',
+          'rgba(244,63,94,0.85)',
+          'rgba(245,158,11,0.85)',
+          'rgba(59,130,246,0.85)',
+          'rgba(129,72,246,0.85)',  
+        ],
+        borderColor: [
+          'rgba(16,185,129,1)',
+          'rgba(244,63,94,1)',
+          'rgba(245,158,11,1)',
+          'rgba(59,130,246,1)',
+          'rgba(129,72,246,1)',
+        ],
+        borderWidth: 2,
+        hoverOffset: 10,
+        borderRadius: 6,
+        spacing: 3,
+      }],
+    },
+    options: {
+      responsive: true,
+      cutout: '68%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#7e97b8',
+            font: { family: 'DM Sans', size: 13, weight: '500' },
+            padding: 18,
+            usePointStyle: true,
+            pointStyleWidth: 10,
+          },
+        },
+        tooltip: {
+          backgroundColor: 'rgba(5,13,26,0.92)',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          titleColor: '#f0f6ff',
+          bodyColor: '#7e97b8',
+          padding: 14,
+          cornerRadius: 12,
+          callbacks: {
+            label: function(context) {
+              const pct = total > 0
+                ? ((context.raw / total) * 100).toFixed(1)
+                : 0;
+              return `  ${context.raw} days  (${pct}%)`;
+            },
+          },
+        },
+      },
+    },
+  });
+})();
+</script>
+
+{% endblock %}

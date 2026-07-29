@@ -1,0 +1,329 @@
+<hr>
+{% comment %} <h4 class="section-title">Identity Card</h4> {% endcomment %}
+
+<style>
+    .id-card-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .id-card {
+        width: 340px;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+        background: #fff;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .id-card-header {
+        background: linear-gradient(135deg, #1e3a5f, #2563eb);
+        padding: 18px 20px 14px;
+        text-align: center;
+        color: #fff;
+    }
+
+    .id-card-header .company-name {
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin: 0;
+    }
+
+    .id-card-header .company-sub {
+        font-size: 10px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        opacity: 0.75;
+        margin: 2px 0 0;
+    }
+
+    .id-card-header .divider-line {
+        width: 40px;
+        height: 2px;
+        background: rgba(255,255,255,0.4);
+        margin: 8px auto 0;
+        border-radius: 2px;
+    }
+
+    .id-card-body {
+        padding: 20px;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .id-card-photo {
+        flex-shrink: 0;
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 3px solid #2563eb;
+        background: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: 700;
+        color: #6b7280;
+    }
+
+    .id-card-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .id-card-info {
+        flex: 1;
+    }
+
+    .id-card-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1e3a5f;
+        margin: 0 0 2px;
+        text-transform: capitalize;
+    }
+
+    .id-card-designation {
+        font-size: 11px;
+        color: #2563eb;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin: 0 0 10px;
+    }
+
+    .id-card-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 5px;
+    }
+
+    .id-card-row i {
+        font-size: 11px;
+        color: #2563eb;
+        width: 14px;
+        flex-shrink: 0;
+    }
+
+    .id-card-row span {
+        font-size: 11px;
+        color: #475569;
+        line-height: 1.4;
+    }
+
+    .id-card-mid {
+        margin: 0 20px;
+        border-top: 1px dashed #e2e8f0;
+        padding: 12px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .id-card-badge {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        padding: 6px 12px;
+        text-align: center;
+    }
+
+    .id-card-badge .badge-label {
+        font-size: 9px;
+        color: #93c5fd;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: block;
+    }
+
+    .id-card-badge .badge-value {
+        font-size: 13px;
+        font-weight: 700;
+        color: #1e3a5f;
+        display: block;
+    }
+
+    .id-card-dept {
+        text-align: right;
+    }
+
+    .id-card-dept .dept-label {
+        font-size: 9px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: block;
+    }
+
+    .id-card-dept .dept-value {
+        font-size: 12px;
+        font-weight: 600;
+        color: #1e3a5f;
+        display: block;
+    }
+
+    .id-card-footer {
+        background: linear-gradient(135deg, #1e3a5f, #2563eb);
+        padding: 10px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .id-card-footer .footer-label {
+        font-size: 9px;
+        color: rgba(255,255,255,0.6);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .id-card-footer .footer-value {
+        font-size: 11px;
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .id-card-download-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #1e3a5f, #2563eb);
+        color: #fff;
+        padding: 9px 20px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(37,99,235,0.25);
+    }
+
+    .id-card-download-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(37,99,235,0.35);
+        color: #fff;
+    }
+</style>
+
+<div class="id-card-wrapper">
+
+    {# ── IDENTITY CARD ── #}
+    <div class="id-card" id="employee-id-card">
+
+        {# Header #}
+        <div class="id-card-header">
+            <p class="company-name">Mantech Publications</p>
+            <p class="company-sub">Employee Identity Card</p>
+            <div class="divider-line"></div>
+        </div>
+
+        {# Body #}
+        <div class="id-card-body">
+
+            {# Photo #}
+            <div class="id-card-photo">
+                {% if employee.profile_picture %}
+                    <img src="{{ employee.profile_picture.url }}" alt="Profile">
+                {% else %}
+                    {{ employee.user.username|default:"A"|first|upper }}
+                {% endif %}
+            </div>
+
+            {# Info #}
+            <div class="id-card-info">
+                <p class="id-card-name " style = "text-transform:capitalize;">{{ employee.user.first_name }} {{ employee.user.last_name }}</p>
+                <p class="id-card-designation">
+                    {% if employee.admin_data %}{{ employee.admin_data.designation }}{% else %}—{% endif %}
+                </p>
+                <div class="id-card-row">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span>{{ employee.user.email }}</span>
+                </div>
+                <div class="id-card-row">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>{{ employee.phone }}</span>
+                </div>
+                <div class="id-card-row">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span>{{ employee.address }}</span>
+                </div>
+            </div>
+
+        </div>
+
+        {# Mid Strip #}
+        <div class="id-card-mid">
+            <div class="id-card-badge">
+                <span class="badge-label">Employee ID</span>
+                <span class="badge-value">{{ employee.emp_id }}</span>
+            </div>
+            <div class="id-card-dept">
+                <span class="dept-label">Department</span>
+                <span class="dept-value" style = "text-transform:uppercase;">{{ employee.department }}</span>
+            </div>
+        </div>
+
+        {# Footer #}
+        <div class="id-card-footer">
+            <div>
+                <span class="footer-label">Joining Date</span>
+                <span class="footer-value d-block">
+                    {% if employee.admin_data %}{{ employee.admin_data.joining_date }}{% else %}—{% endif %}
+                </span>
+            </div>
+            <div style="text-align:right;">
+                <span class="footer-label">Role</span>
+                <span class="footer-value d-block" style = "text-transform:uppercase;">
+                    {% if employee.admin_data %}{{ employee.admin_data.role }}{% else %}—{% endif %}
+                </span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="d-flex gap-3">
+    {# ── DOWNLOAD BUTTON ── #}
+    <a href="{% url 'download_id_card' employee.user.id %}"
+       class="id-card-download-btn">
+        <i class="fa-solid fa-download"></i>
+        <i class="fa-solid fa-id-card"></i>
+        ID Card
+    </a>
+    
+    {% if not request.user.is_superuser and not request.user.is_staff %}
+    {# ── DOWNLOAD EXPERIENCE LETTER BUTTON ── #}
+    <a href="{% url 'download_experience_letter' employee.user.id %}"
+    class="id-card-download-btn"
+    id="expLetterBtn"
+    style="display:none;">
+        <i class="fa-solid fa-download"></i>
+        <i class="fa-solid fa-file-lines"></i>
+        Exp Letter
+    </a>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const btn = document.getElementById("expLetterBtn");
+
+        // Set the date when the button should become visible
+        const showDate = new Date("2026-06-13"); // 5 days after 2026-06-08
+
+        if (new Date() >= showDate) {
+            btn.style.display = "inline-flex";
+        }
+    });
+    </script>
+    {% endif %}
+    </div>
+</div>

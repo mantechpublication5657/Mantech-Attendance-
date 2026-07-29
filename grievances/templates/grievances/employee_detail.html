@@ -1,0 +1,92 @@
+{% extends 'layouts/main_layout.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} — Mantech HRMS{% endblock %}
+
+{% block extra_css %}
+<style>
+  .detail-card { border-radius:14px; border:1.5px solid #e3e8f0; background:#fff; margin-bottom:1.5rem; }
+  .detail-header { background:linear-gradient(135deg,#1a237e,#1565c0); color:#fff; padding:1.5rem 2rem; border-radius:12px 12px 0 0; }
+  .detail-header h4 { margin:0; font-weight:700; }
+
+  .reply-bubble { border-radius:12px; padding:1rem 1.25rem; margin-bottom:1rem; }
+  .reply-admin  { background:#e8f5e9; border-left:4px solid #2e7d32; }
+  .reply-label  { font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
+  .reply-label.admin { color:#2e7d32; }
+
+  .status-badge { border-radius:20px; padding:.3rem .9rem; font-size:.85rem; font-weight:600; }
+  .badge-pending  { background:#fff3e0; color:#e65100; }
+  .badge-reviewed { background:#e3f2fd; color:#1565c0; }
+  .badge-resolved { background:#e8f5e9; color:#2e7d32; }
+  .badge-rejected { background:#fce4ec; color:#b71c1c; }
+
+  .email-notice { background:#f3f8ff; border:1.5px dashed #90caf9; border-radius:10px; padding:1rem 1.25rem; font-size:.9rem; color:#1565c0; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="container py-4" style="max-width:750px;">
+
+  <a href="{% url 'grievance_list' %}" class="btn btn-sm btn-outline-secondary mb-3" style="border-radius:8px;">
+    <i class="fas fa-arrow-left me-1"></i> Back to My Applications
+  </a>
+
+  <!-- Application detail -->
+  <div class="detail-card">
+    <div class="detail-header">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+          <h4>{{ grievance.subject }}</h4>
+          <small style="opacity:.8;">{{ grievance.get_category_display }} · {{ grievance.created_at|date:"M d, Y H:i" }}</small>
+        </div>
+        <span class="status-badge badge-{{ grievance.status }}">{{ grievance.get_status_display }}</span>
+      </div>
+    </div>
+    <div class="p-4">
+      <p style="white-space:pre-wrap;">{{ grievance.message }}</p>
+
+      {% if grievance.status == 'pending' %}
+      <div class="d-flex gap-2 mt-3">
+        <a href="{% url 'grievance_edit' grievance.pk %}" class="btn btn-sm btn-outline-primary" style="border-radius:8px;">
+          <i class="fas fa-pen me-1"></i> Edit
+        </a>
+        <a href="{% url 'grievance_delete' grievance.pk %}" class="btn btn-sm btn-outline-danger" style="border-radius:8px;">
+          <i class="fas fa-trash me-1"></i> Delete
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Replies -->
+  {% if replies %}
+  <h6 class="fw-bold text-muted mb-3"><i class="fas fa-comments me-1"></i> Responses</h6>
+  {% for reply in replies %}
+    {% if reply.replied_by_admin %}
+    <div class="reply-bubble reply-admin">
+      <div class="reply-label admin mb-1"><i class="fas fa-shield-alt me-1"></i>HR / Admin</div>
+      <p class="mb-1" style="white-space:pre-wrap;">{{ reply.message }}</p>
+      <small class="text-muted">{{ reply.created_at|date:"M d, Y H:i" }}</small>
+      {% if reply.email_sent %}
+        <span class="badge bg-success ms-2" style="font-size:.72rem;">Email Sent</span>
+      {% endif %}
+    </div>
+    {% endif %}
+  {% endfor %}
+
+  {% if grievance.has_admin_reply %}
+  <div class="email-notice">
+    <i class="fas fa-envelope me-2"></i>
+    <strong>A reply has been sent to your registered email address.</strong>
+    Please check your email for the full response from HR.
+  </div>
+  {% endif %}
+
+  {% else %}
+    <div class="text-center text-muted py-3">
+      <i class="fas fa-hourglass-half me-1"></i> Awaiting HR response…
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

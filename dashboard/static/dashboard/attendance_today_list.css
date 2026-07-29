@@ -1,0 +1,441 @@
+/* =====================================================
+   ATTENDANCE TODAY LIST — FULLY RESPONSIVE CSS
+   Uses your existing variables: --navy, --blue, --blue2,
+   --slate, --border, --shadow, --shadow-lg, --card-bg,
+   --light. Fonts: Syne + DM Sans.
+   Sidebar = 250px fixed, collapses at 992px.
+   ===================================================== */
+
+/* ── Header ── */
+.att-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.att-header h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.att-date-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--slate);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  white-space: nowrap;
+}
+
+/* ── Stat Cards ── */
+.att-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.att-stats .stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.att-stats .stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+.att-stats .stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+.att-stats .stat-icon.blue  { background: #eff6ff; color: var(--blue); }
+.att-stats .stat-icon.green { background: #f0fdf4; color: #16a34a; }
+.att-stats .stat-icon.red   { background: #fff1f2; color: #e11d48; }
+.att-stats .stat-icon.amber { background: #fffbeb; color: #d97706; }
+.att-stats .stat-label {
+  font-size: 12px;
+  color: var(--slate);
+  margin-bottom: 3px;
+}
+.att-stats .stat-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--navy);
+  line-height: 1;
+}
+
+/* ── Filter Bar ── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 13px 16px;
+  margin-bottom: 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+.filter-bar label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--slate);
+  white-space: nowrap;
+}
+.filter-bar input[type="date"],
+.filter-bar select {
+  padding: 7px 11px;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--navy);
+  background: var(--light);
+  outline: none;
+  min-width: 0;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.filter-bar input[type="date"]:focus,
+.filter-bar select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.10);
+}
+.filter-bar .btn-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, transform 0.12s;
+}
+.filter-bar .btn-filter:hover  { background: var(--blue2); transform: translateY(-1px); }
+.filter-bar .btn-filter:active { transform: translateY(0); }
+.filter-bar .btn-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  background: transparent;
+  color: var(--slate);
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+.filter-bar .btn-reset:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  text-decoration: none;
+}
+
+/* Search box */
+.search-wrap {
+  position: relative;
+  margin-left: auto;
+}
+.search-wrap > i {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--slate);
+  font-size: 13px;
+  pointer-events: none;
+}
+.search-wrap input {
+  padding: 7px 11px 7px 30px;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  width: 200px;
+  outline: none;
+  background: var(--light);
+  color: var(--navy);
+  transition: border-color 0.15s, box-shadow 0.15s, width 0.2s;
+}
+.search-wrap input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.10);
+  width: 230px;
+}
+
+/* ── Tabs ── */
+.att-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 0;
+  flex-wrap: nowrap;
+}
+.att-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  border-radius: 10px 10px 0 0;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  background: #eef2f9;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--slate);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.att-tab:hover:not(.active) {
+  background: var(--card-bg);
+  color: var(--navy);
+}
+.att-tab.active {
+  background: var(--card-bg);
+  color: var(--blue);
+  font-weight: 700;
+}
+.tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.tab-count.green { background: #f0fdf4; color: #16a34a; }
+.tab-count.red   { background: #fff1f2; color: #e11d48; }
+
+/* ── Table Panel ── */
+.att-panel-wrap {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 0 14px 14px 14px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* Scroll wrapper — horizontal scroll on small screens */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-scroll::-webkit-scrollbar       { height: 4px; }
+.table-scroll::-webkit-scrollbar-track { background: var(--light); }
+.table-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+/* Table inside attendance panel */
+.att-panel-wrap .emp-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 660px;   /* triggers scroll before columns crush */
+}
+.att-panel-wrap .emp-table thead tr {
+  background: var(--light);
+  border-bottom: 1px solid #f1f5f9;
+}
+.att-panel-wrap .emp-table th {
+  padding: 11px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: var(--slate);
+  text-align: left;
+  white-space: nowrap;
+}
+.att-panel-wrap .emp-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f8fafc;
+  vertical-align: middle;
+  font-size: 13.5px;
+}
+.att-panel-wrap .emp-table tbody tr:last-child td { border-bottom: none; }
+.att-panel-wrap .emp-table tbody tr:hover         { background: var(--light); }
+
+/* Employee cell */
+.emp-info  { display: flex; align-items: center; gap: 10px; }
+.emp-av    {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+  flex-shrink: 0; letter-spacing: 0.3px;
+}
+.emp-name  { font-size: 13px; font-weight: 600; color: var(--navy); white-space: nowrap; }
+.emp-role  { font-size: 11px; color: var(--slate); margin-top: 1px; }
+
+/* Time badges */
+.time-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue);
+  white-space: nowrap;
+}
+.time-badge.out  { color: #16a34a; }
+.time-badge.none { color: var(--slate); font-weight: 400; font-style: italic; font-size: 12px; }
+
+/* Duration pill */
+.duration-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #eff6ff;
+  color: var(--blue);
+  white-space: nowrap;
+}
+
+/* Status tags */
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tag-active   { background: #f0fdf4; color: #16a34a; }
+.tag-inactive { background: #fff1f2; color: #e11d48; }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 56px 20px;
+  color: var(--slate);
+}
+.empty-state i   { font-size: 40px; display: block; margin-bottom: 10px; opacity: 0.3; }
+.empty-state p   { font-size: 14px; margin: 0; }
+
+/* ==============================================
+   BREAKPOINTS — mirrors your layout exactly:
+   1200 / 992 (sidebar off) / 768 / 480
+   ============================================== */
+
+/* 1200px — 4-col stat → 2-col */
+@media (max-width: 1200px) {
+  .att-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* 992px — sidebar slides away, main-content margin-left:0
+   Content now has full viewport width.
+   Widen search to use freed space.               */
+@media (max-width: 992px) {
+  .att-stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+  .search-wrap              { margin-left: 0; width: 100%; }
+  .search-wrap input        { width: 100%; }
+  .search-wrap input:focus  { width: 100%; }
+
+  .filter-bar input[type="date"],
+  .filter-bar select        { flex: 1; min-width: 120px; }
+}
+
+/* 768px — mobile layout */
+@media (max-width: 768px) {
+  .att-header               { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .att-header h2            { font-size: 16px; }
+  .att-date-badge           { font-size: 12px; padding: 5px 11px; }
+
+  .att-stats                { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .att-stats .stat-card     { padding: 13px 14px; gap: 11px; }
+  .att-stats .stat-value    { font-size: 21px; }
+  .att-stats .stat-icon     { width: 38px; height: 38px; font-size: 16px; border-radius: 10px; }
+
+  .filter-bar               { padding: 11px 12px; gap: 8px; }
+  .filter-bar .btn-filter,
+  .filter-bar .btn-reset    { flex: 1; justify-content: center; }
+  .search-wrap              { margin-left: 0; width: 100%; }
+  .search-wrap input,
+  .search-wrap input:focus  { width: 100%; }
+
+  .att-tabs                 { gap: 4px; }
+  .att-tab                  { padding: 8px 14px; font-size: 12px; }
+
+  .att-panel-wrap           { border-radius: 0 10px 10px 10px; }
+  .att-panel-wrap .emp-table th,
+  .att-panel-wrap .emp-table td { padding: 10px 12px; }
+}
+
+/* 480px — very small screens */
+@media (max-width: 480px) {
+  .att-header h2            { font-size: 14px; }
+  .att-date-badge           { font-size: 11px; padding: 4px 9px; }
+
+  .att-stats                { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .att-stats .stat-card     { padding: 11px 12px; gap: 9px; }
+  .att-stats .stat-label    { font-size: 11px; }
+  .att-stats .stat-value    { font-size: 18px; }
+  .att-stats .stat-icon     { width: 34px; height: 34px; font-size: 14px; border-radius: 8px; }
+
+  /* Stack entire filter bar vertically */
+  .filter-bar               { flex-direction: column; align-items: stretch; gap: 7px; padding: 10px; }
+  .filter-bar > label:first-child { display: none; }   /* hide "Filter" icon-label */
+  .filter-bar label         { font-size: 12px; }
+  .filter-bar input[type="date"],
+  .filter-bar select,
+  .filter-bar .btn-filter,
+  .filter-bar .btn-reset,
+  .search-wrap,
+  .search-wrap input,
+  .search-wrap input:focus  { width: 100%; }
+
+  /* Hide count badges on tabs to save space */
+  .att-tab                  { padding: 7px 11px; font-size: 12px; }
+  .att-tab .tab-count       { display: none; }
+
+  .att-panel-wrap           { border-radius: 0 8px 8px 8px; }
+  .att-panel-wrap .emp-table th,
+  .att-panel-wrap .emp-table td { padding: 9px 10px; }
+
+  .emp-av                   { width: 30px; height: 30px; font-size: 10px; border-radius: 7px; }
+  .emp-name                 { font-size: 12px; }
+  .emp-role                 { font-size: 10px; }
+  .time-badge               { font-size: 12px; }
+  .status-tag               { font-size: 11px; padding: 2px 8px; }
+}

@@ -1,0 +1,310 @@
+{% extends 'layouts/main_layout.html' %}
+{% load static %}
+
+{% block title %}Edit Employee{% endblock %}
+
+{% block page_content %}
+
+<style>
+    .edit-wrapper{
+        padding: 24px;
+    }
+
+    .edit-card{
+        background: #ffffff;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 12px 35px rgba(0,0,0,0.08);
+        border: none;
+    }
+
+    .edit-header{
+        background: linear-gradient(135deg,#2563eb,#1e3a8a);
+        padding: 35px;
+        color: white;
+    }
+
+    .edit-header h2{
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .edit-header p{
+        margin-bottom: 0;
+        opacity: 0.9;
+    }
+
+    .profile-section{
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .profile-image{
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid rgba(255,255,255,0.3);
+    }
+
+    .form-section{
+        padding: 30px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .section-title{
+        font-size: 19px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 24px;
+        border-left: 4px solid #2563eb;
+        padding-left: 12px;
+    }
+
+    .form-label{
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 8px;
+    }
+
+    .form-control,
+    .form-select,
+    textarea{
+        border-radius: 14px;
+        padding: 12px 14px;
+        border: 1px solid #dbeafe;
+        box-shadow: none;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus,
+    textarea:focus{
+        border-color: #2563eb;
+        box-shadow: 0 0 0 0.15rem rgba(37,99,235,0.15);
+    }
+
+    .info-badge{
+        background: rgba(255,255,255,0.18);
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+
+    .upload-box{
+        border: 2px dashed #cbd5e1;
+        border-radius: 18px;
+        padding: 25px;
+        text-align: center;
+        background: #f8fafc;
+    }
+
+    .save-btn{
+        background: linear-gradient(135deg,#2563eb,#1d4ed8);
+        border: none;
+        color: white;
+        padding: 14px 28px;
+        border-radius: 14px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .save-btn:hover{
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(37,99,235,0.25);
+    }
+
+    .cancel-btn{
+        border-radius: 14px;
+        padding: 14px 24px;
+        font-weight: 600;
+    }
+
+    .admin-section{
+        background: #f8fbff;
+    }
+
+    .alert{
+        border-radius: 14px;
+    }
+
+    @media(max-width:768px){
+
+        .edit-wrapper{
+            padding: 10px;
+        }
+
+        .form-section{
+            padding: 20px;
+        }
+
+        .edit-header{
+            text-align: center;
+        }
+
+        .profile-section{
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="container-fluid edit-wrapper">
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card edit-card">
+
+        <!-- Header -->
+        <div class="edit-header">
+            <div class="profile-section d-flex align-items-center gap-3 flex-wrap">
+
+                {% if profile.profile_picture %}
+                    <img src="{{ profile.profile_picture.url }}" class="profile-image" id="previewImage">
+                {% elif not employee.user.employee_profile.profile_picture %}
+                    <span class="avatar-placeholder" style="width:120px;height:120px;display:flex;align-items:center;justify-content:center;background-color:#e5e7eb;color:#6b7280;font-size:2rem;font-weight:bold;margin-bottom:15px;border-radius:50%;">
+                        {{ employee.user.username|default:"A"|first|upper }}
+                    </span>
+                {% else %}
+                    <img src="{% static 'images/default-user.png' %}" class="profile-image" id="previewImage">
+                {% endif %}
+
+                <div>
+                    <h2>
+                        <i class="fa-solid fa-user-pen me-2"></i>
+                        Edit <span style="text-transform:capitalize;">{{ profile.user.full_name|default:profile.user.username }}</span> Profile
+                    </h2>
+                    <p class="mb-3">Update employee information and account details</p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <span class="info-badge">ID: {{ profile.emp_id }}</span>
+                        <span class="info-badge">{{ profile.department }}</span>
+                        {% if profile.admin_data %}
+                            <span class="info-badge">{{ profile.admin_data.designation }}</span>
+                        {% endif %}
+                        <div class="mt-3 mt-md-0">
+                            <a href="{% url 'employee_detail' profile.user.id %}" class="btn btn-light btn-custom">
+                                <i class="fa-solid fa-arrow-left me-2"></i> Back to Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Basic Information -->
+            <div class="form-section">
+                <h4 class="section-title">Basic Information</h4>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Phone Number</label>
+                        {{ basic_form.phone }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Gender</label>
+                        {{ basic_form.gender }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Date of Birth</label>
+                        {{ basic_form.date_of_birth }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Emergency Contact</label>
+                        {{ basic_form.emergency_contact_phone }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Department</label>
+                        {{ basic_form.department }}
+                    </div>
+                    <div class="col-12 mb-4">
+                        <label class="form-label">Address</label>
+                        {{ basic_form.address }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Picture -->
+            <div class="form-section">
+                <h4 class="section-title">Profile Picture</h4>
+                <div class="upload-box text-center">
+                    <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}" 
+                         class="profile-image mb-3" id="profilePreview">
+                    <div class="mb-3">
+                        {{ basic_form.profile_picture }}
+                    </div>
+                    <p class="text-muted mb-0">Upload a new employee profile picture</p>
+                </div>
+            </div>
+
+            <!-- Admin Only Section -->
+            {% if is_admin and admin_form %}
+            <div class="form-section admin-section">
+                <h4 class="section-title">Admin Employee Controls</h4>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Role</label>
+                        {{ admin_form.role }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Designation</label>
+                        {{ admin_form.designation }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Joining Date</label>
+                        {{ admin_form.joining_date }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Buttons -->
+            <div class="form-section">
+                <div class="d-flex justify-content-end flex-wrap gap-3">
+                    <a href="{% url 'employee_detail' profile.user.id %}" class="btn btn-outline-secondary cancel-btn">
+                        <i class="fa-solid fa-arrow-left me-2"></i> Cancel
+                    </a>
+                    <button type="submit" class="save-btn">
+                        <i class="fa-solid fa-floppy-disk me-2"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+
+    // Image Preview
+
+    const fileInput = document.querySelector('input[type="file"]');
+    const preview = document.getElementById('profilePreview');
+
+    if(fileInput){
+        fileInput.addEventListener('change', function(e){
+
+            const file = e.target.files[0];
+
+            if(file){
+                preview.src = URL.createObjectURL(file);
+            }
+
+        });
+    }
+
+</script>
+
+{% endblock %}

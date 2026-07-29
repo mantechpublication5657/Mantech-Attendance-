@@ -1,0 +1,63 @@
+
+{% load static %}
+{% if request.user.is_authenticated %}
+
+<script>
+  window.MT_CHAT_CONFIG = {
+    username:        "{{ request.user.username|escapejs }}",
+    user_first_name: "{{ request.user.first_name|default:request.user.username|escapejs }}",
+  };
+</script>
+
+<link rel="stylesheet" href="{% static 'mantech_chatbot/css/chatbot.css' %}">
+
+<button id="mt-chat-trigger" aria-label="Open HRMS Assistant" title="ManTech Assistant">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 3C6.5 3 2 6.58 2 11a7.8 7.8 0 0 0 2.75 5.85L3 21l4.5-2.3A11 11 0 0 0 12 19c5.5 0 10-3.58 10-8s-4.5-8-10-8zm1 11H7v-2h6v2zm2-4H7V8h8v2z"/>
+  </svg>
+  <div id="mt-chat-badge" aria-hidden="true"></div>
+</button>
+
+<div id="mt-chat-tooltip" role="status" aria-live="polite" style = "text-transform:capitalize;">
+  👋 Hi {{ request.user.first_name|default:request.user.username }}! Need help?
+</div>
+
+<div id="mt-chat-window" role="dialog" aria-label="ManTech HRMS Assistant" aria-modal="true">
+
+  <div id="mt-chat-header">
+    <div class="mt-bot-avatar" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.38-1 1.73V7h1a7 7 0 0 1 7 7v1a2 2 0 0 1-2 2h-1v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-1H5a2 2 0 0 1-2-2v-1a7 7 0 0 1 7-7h1V5.73A2 2 0 0 1 10 4a2 2 0 0 1 2-2zm-3 9a1.5 1.5 0 0 0 0 3 1.5 1.5 0 0 0 0-3zm6 0a1.5 1.5 0 0 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+      </svg>
+    </div>
+    <div class="mt-header-info">
+      <div class="mt-bot-name">ManTech Assistant</div>
+      <div class="mt-bot-status">
+        <div class="mt-online-dot" aria-hidden="true"></div>
+        Online &mdash; HRMS Support
+      </div>
+    </div>
+    <button id="mt-close-btn" aria-label="Close chat">&times;</button>
+  </div>
+
+  <div id="mt-welcome-bar" aria-live="polite"></div>
+
+  <div id="mt-chat-messages" role="log" aria-live="polite" aria-label="Chat messages"></div>
+
+  <div id="mt-quick-replies" role="group" aria-label="Quick reply options"></div>
+
+  <div id="mt-input-row">
+    <input id="mt-text-input" type="text" placeholder="Type your question..."
+           autocomplete="off" aria-label="Chat input" maxlength="300" />
+    <button id="mt-send-btn" aria-label="Send message">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+
+</div>
+
+<script src="{% static 'mantech_chatbot/js/chatbot.js' %}"></script>
+
+{% endif %}

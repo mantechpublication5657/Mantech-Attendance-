@@ -1,0 +1,516 @@
+{% extends 'layouts/main_layout.html' %}
+{% load static %}
+
+{% block title %}Add Payroll{% endblock %}
+
+{% block page_content %}
+
+<style>
+
+    :root{
+        --primary:#4f46e5;
+        --primary-dark:#4338ca;
+        --success:#10b981;
+        --light:#f8fafc;
+        --border:#e2e8f0;
+        --text:#1e293b;
+        --muted:#64748b;
+        --danger:#ef4444;
+    }
+
+    /* =========================================
+    PAGE WRAPPER
+    ========================================= */
+
+    .payroll-page{
+        padding:30px 20px;
+        min-height:100vh;
+        background:
+            linear-gradient(
+                135deg,
+                #eef2ff 0%,
+                #f8fafc 100%
+            );
+    }
+
+    /* =========================================
+    CARD
+    ========================================= */
+
+    .payroll-card{
+        max-width:1100px;
+        margin:auto;
+        background:#fff;
+        border-radius:24px;
+        box-shadow:
+            0 10px 30px rgba(0,0,0,0.08);
+        overflow:hidden;
+        border:1px solid rgba(255,255,255,0.5);
+    }
+
+    /* =========================================
+    HEADER
+    ========================================= */
+
+    .payroll-header{
+        padding:35px;
+        background:
+            linear-gradient(
+                135deg,
+                var(--primary),
+                #7c3aed
+            );
+        color:#fff;
+    }
+
+    .payroll-header h2{
+        margin:0;
+        font-size:32px;
+        font-weight:700;
+    }
+
+    .payroll-header p{
+        margin-top:8px;
+        opacity:.9;
+        font-size:15px;
+    }
+
+    /* =========================================
+    BODY
+    ========================================= */
+
+    .payroll-body{
+        padding:35px;
+    }
+
+    /* =========================================
+    EMPLOYEE INFO
+    ========================================= */
+
+    .employee-info-box{
+        background:#f8fafc;
+        border:1px solid var(--border);
+        border-radius:18px;
+        padding:24px;
+        margin-bottom:30px;
+    }
+
+    .employee-info-header{
+        display:flex;
+        align-items:center;
+        gap:15px;
+    }
+
+    .employee-avatar{
+        width:90px;
+        height:90px;
+        border-radius:50%;
+        overflow:hidden;
+        flex-shrink:0;
+        border:4px solid #fff;
+        box-shadow:
+            0 8px 18px rgba(0,0,0,.08);
+    }
+
+    .employee-avatar img{
+        width:100%;
+        height:100%;
+        object-fit:cover;
+    }
+
+    .employee-avatar-placeholder{
+        width:100%;
+        height:100%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:
+            linear-gradient(
+                135deg,
+                #4f46e5,
+                #7c3aed
+            );
+        color:#fff;
+        font-size:32px;
+    }
+
+    .employee-details h4{
+        margin:0;
+        color:var(--text);
+        font-size:20px;
+        font-weight:700;
+    }
+
+    .employee-details p{
+        margin:4px 0 0;
+        color:var(--muted);
+        font-size:14px;
+    }
+
+    .payroll-period{
+        margin-top:18px;
+        display:inline-flex;
+        align-items:center;
+        gap:10px;
+        padding:10px 16px;
+        background:#eef2ff;
+        border-radius:12px;
+        color:var(--primary);
+        font-weight:600;
+        font-size:14px;
+    }
+
+    /* =========================================
+    FORM GRID
+    ========================================= */
+
+    .payroll-form-grid{
+        display:grid;
+        grid-template-columns:repeat(2,1fr);
+        gap:24px;
+    }
+
+    /* =========================================
+    FORM GROUP
+    ========================================= */
+
+    .form-group{
+        display:flex;
+        flex-direction:column;
+    }
+
+    .form-group label{
+        font-size:14px;
+        font-weight:600;
+        margin-bottom:8px;
+        color:var(--text);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea{
+        width:100%;
+        height:54px;
+        border-radius:14px;
+        border:1px solid var(--border);
+        padding:0 16px;
+        outline:none;
+        transition:.3s;
+        font-size:15px;
+        background:#fff;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus{
+        border-color:var(--primary);
+        box-shadow:
+            0 0 0 4px rgba(79,70,229,.1);
+    }
+
+    /* =========================================
+    ERRORS
+    ========================================= */
+
+    .errorlist{
+        margin-top:8px;
+        padding:0;
+        list-style:none;
+        color:var(--danger);
+        font-size:13px;
+    }
+
+    /* =========================================
+    BUTTONS
+    ========================================= */
+
+    .submit-wrapper{
+        margin-top:35px;
+        display:flex;
+        justify-content:flex-end;
+        gap:15px;
+        flex-wrap:wrap;
+    }
+
+    .btn-payroll{
+        border:none;
+        background:
+            linear-gradient(
+                135deg,
+                var(--primary),
+                #7c3aed
+            );
+        color:#fff;
+        padding:15px 32px;
+        border-radius:14px;
+        font-size:15px;
+        font-weight:600;
+        display:flex;
+        align-items:center;
+        gap:10px;
+        transition:.3s;
+        cursor:pointer;
+        box-shadow:
+            0 8px 20px rgba(79,70,229,.25);
+    }
+
+    .btn-payroll:hover{
+        transform:translateY(-2px);
+        background:
+            linear-gradient(
+                135deg,
+                var(--primary-dark),
+                #6d28d9
+            );
+    }
+
+    .btn-back{
+        background:#fff;
+        color:var(--text);
+        border:1px solid var(--border);
+        padding:15px 24px;
+        border-radius:14px;
+        font-size:15px;
+        font-weight:600;
+        text-decoration:none;
+        display:flex;
+        align-items:center;
+        gap:10px;
+        transition:.3s;
+    }
+
+    .btn-back:hover{
+        background:#f8fafc;
+        color:var(--text);
+    }
+
+    /* =========================================
+    RESPONSIVE
+    ========================================= */
+
+    @media(max-width:768px){
+
+        .payroll-header{
+            padding:25px;
+        }
+
+        .payroll-header h2{
+            font-size:24px;
+        }
+
+        .payroll-body{
+            padding:20px;
+        }
+
+        .payroll-form-grid{
+            grid-template-columns:1fr;
+        }
+
+        .submit-wrapper{
+            justify-content:center;
+        }
+
+        .btn-payroll,
+        .btn-back{
+            width:100%;
+            justify-content:center;
+        }
+
+        .employee-info-header{
+            flex-direction:column;
+            align-items:flex-start;
+        }
+    }
+
+</style>
+
+<div class="payroll-page">
+
+    <div class="payroll-card">
+        
+        <!-- HEADER -->
+        <div class="payroll-header">
+
+            <h2>
+
+                <i class="fa-solid fa-money-check-dollar"></i>
+                Add Payroll
+
+            </h2>
+
+            <p>
+
+                Create payroll for the current month and year.
+            </p>
+            <p>
+                {% if carried_gross_salary %}
+                    <small class="text-muted">
+                        <i class="fa-solid fa-circle-info me-1"></i>
+                        Gross salary auto-filled from previous month: <strong>₹{{ carried_gross_salary }}</strong>
+                    </small>
+                {% else %}
+                    <small class="text-warning">
+                        <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                        No previous payroll found. Please enter gross salary manually.
+                    </small>
+                {% endif %}
+            </p>
+
+        </div>
+
+        <!-- BODY -->
+        <div class="payroll-body">
+
+            <!-- EMPLOYEE INFO -->
+            <div class="employee-info-box">
+
+                <div class="employee-info-header">
+
+                    <!-- PROFILE IMAGE -->
+                    <div class="employee-avatar">
+
+                        {% if employee.profile_picture %}
+
+                            <img src="{{ employee.profile_picture.url }}"
+                                 alt="{{ employee.user.username }}">
+
+                        {% else %}
+
+                            <div class="employee-avatar-placeholder">
+
+                                <i class="fa-solid fa-user"></i>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="employee-details">
+
+                        <h4 class = "text-capitalize">
+
+                            {{ employee.user.get_full_name|default:employee.user.username }}
+
+                        </h4>
+
+                        <p>
+
+                            {{ employee.user.email }}
+
+                        </p>
+
+                        <p>
+
+                            Employee ID :
+                            {{ employee.emp_id }}
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="payroll-period">
+
+                    <i class="fa-solid fa-calendar-days"></i>
+
+                    Payroll Period :
+                    {{ month }}/{{ year }}
+
+                </div>
+
+            </div>
+
+            <!-- FORM -->
+            <form method="POST">
+
+                {% csrf_token %}
+
+                {{ form.non_field_errors }}
+
+                <div class="payroll-form-grid">
+
+                    {% for field in form %}
+
+                        {% if field.name != "employee" and field.name != "month" and field.name != "year" %}
+
+                        <div class="form-group">
+
+                            <label for="{{ field.id_for_label }}">
+
+                                {{ field.label }}
+
+                            </label>
+
+                            {{ field }}
+
+                            {{ field.errors }}
+
+                        </div>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                </div>
+
+                <!-- BUTTONS -->
+                <div class="submit-wrapper">
+
+                    <a href="{% url 'payroll_dashboard' request.user.id %}"
+                       class="btn-back">
+
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Back
+
+                    </a>
+
+                    <button type="submit"
+                            class="btn-payroll">
+
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Save Payroll
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const basicSalary = document.getElementById("id_basic_salary");
+    const hra = document.getElementById("id_hra");
+    const da = document.getElementById("id_da");
+    const grossSalary = document.getElementById("id_gross_salary");
+
+    // Read only since they are auto-calculated
+    basicSalary.readOnly = true;
+    hra.readOnly = true;
+    da.readOnly = true;
+
+
+    grossSalary.addEventListener("input", function () {
+
+        let salary = parseFloat(this.value) || 0;
+        // 50% HRA
+        basicSalary.value = (salary * 0.50).toFixed(2);
+
+        // 20% HRA
+        hra.value = (salary * 0.20).toFixed(2);
+
+        // 30% DA
+        da.value = (salary * 0.30).toFixed(2);
+    });
+
+});
+</script>
+{% endblock %}

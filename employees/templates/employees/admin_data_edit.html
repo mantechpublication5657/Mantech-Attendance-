@@ -1,0 +1,111 @@
+{% extends 'layouts/main_layout.html' %}
+{% load static %}
+
+{% block title %}Edit Admin Data{% endblock %}
+
+{% block page_content %}
+<style>
+    .admin-edit-wrapper {
+        padding: 20px;
+    }
+
+    .admin-edit-header {
+        background: linear-gradient(135deg, #9333ea, #6d28d9);
+        border-radius: 16px;
+        padding: 25px;
+        color: white;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .admin-edit-card {
+        background: #fff;
+        border-radius: 18px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        transition: 0.3s ease;
+    }
+
+    .admin-edit-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .form-control {
+        border-radius: 10px;
+        padding: 10px;
+    }
+
+    .btn-custom {
+        border-radius: 12px;
+        padding: 10px 18px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .btn-custom:hover {
+        transform: scale(1.05);
+    }
+
+    @media(max-width:768px){
+        .admin-edit-header {
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="container-fluid admin-edit-wrapper">
+
+    <!-- Header -->
+    <div class="admin-edit-header d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+            <h2 class="fw-bold mb-2">
+                <i class="fa-solid fa-user-gear me-2"></i>
+                Edit Admin Data
+            </h2>
+            <p class="mb-0">Update employee’s role, designation, and joining details</p>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <a href="{% url 'admin_data_detail' employee.user.id %}" class="btn btn-light btn-custom">
+                <i class="fa-solid fa-arrow-left me-2"></i> Back to Admin Data
+            </a>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="admin-edit-card">
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label">Role</label>
+                    {{ form.role }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Designation</label>
+                    {{ form.designation }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Joining Date</label>
+                    {{ form.joining_date }}
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="d-flex justify-content-end flex-wrap gap-3 mt-4">
+                <a href="{% url 'admin_data_detail' employee.user.id %}" class="btn btn-outline-secondary btn-custom">
+                    <i class="fa-solid fa-xmark me-2"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-primary btn-custom">
+                    <i class="fa-solid fa-floppy-disk me-2"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{# ─────────────────────────────────────────────────────────────────── #}
+{# Include this snippet inside your navbar in base.html for admins.   #}
+{# It shows a live notification bell with unseen grievance count.      #}
+{# Requires: grievances.context_processors.admin_notifications          #}
+{#           added to TEMPLATES context_processors in settings.py       #}
+{# ─────────────────────────────────────────────────────────────────── #}
+
+{% if user.is_staff or user.is_superuser %}
+<li class="nav-item">
+  <a class="nav-link position-relative" href="{% url 'admin_notifications' %}" title="Employee Grievances">
+    <div class="icon-btn">
+    <i class="bi bi-bell-fill"></i>
+    {% comment %} <i class="fas fa-bell fs-5"></i> {% endcomment %}
+    {% if admin_unseen_notifications %}
+      <span id="grievance-badge"
+            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+            style="font-size:.65rem;">
+        {{ admin_unseen_notifications }}
+      </span>
+    {% else %}
+      <span id="grievance-badge"
+            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
+            style="font-size:.65rem;">
+        0
+      </span>
+    {% endif %}
+  </div>
+  </a>
+</li>
+
+
+{# Live poll every 30s to update badge without page reload #}
+<script>
+(function () {
+  const badge = document.getElementById('grievance-badge');
+  if (!badge) return;
+
+  async function refreshBadge() {
+    try {
+      const r = await fetch("{% url 'admin_unseen_count' %}");
+      const d = await r.json();
+      if (d.count > 0) {
+        badge.textContent = d.count;
+        badge.classList.remove('d-none');
+      } else {
+        badge.classList.add('d-none');
+      }
+    } catch(e) {}
+  }
+
+  setInterval(refreshBadge, 30000);
+})();
+</script>
+{% endif %}

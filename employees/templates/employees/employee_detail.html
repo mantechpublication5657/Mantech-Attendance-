@@ -1,0 +1,986 @@
+{% extends 'layouts/main_layout.html' %}
+{% load static %}
+
+{% block title %}Employee Details{% endblock %}
+
+{% block page_content %}
+<style>
+    .employee-wrapper {
+        padding: 20px;
+    }
+
+    .employee-header {
+        background: linear-gradient(135deg, #2563eb, #1e40af);
+        border-radius: 16px;
+        padding: 25px;
+        color: white;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .profile-card {
+        background: #fff;
+        border-radius: 18px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        transition: 0.3s ease;
+    }
+
+    .profile-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .profile-image {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #2563eb;
+        margin-bottom: 15px;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #555;
+        font-size: 14px;
+    }
+
+    .info-value {
+        color: #111;
+        font-size: 15px;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #1f2937;
+    }
+
+    .card-section {
+        margin-bottom: 25px;
+    }
+
+    .btn-custom {
+        border-radius: 12px;
+        padding: 10px 18px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .btn-custom:hover {
+        transform: scale(1.05);
+    }
+
+    @media(max-width:768px){
+        .employee-header {
+            text-align: center;
+        }
+        .profile-card {
+            margin-bottom: 20px;
+        }
+    }
+</style>
+<div class="container-fluid employee-wrapper">
+    <!-- Header -->
+    <div class="employee-header d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+            <h2 class="fw-bold mb-2">
+                <i class="fa-solid fa-id-card me-2"></i>
+                Employee Details
+            </h2>
+            <p class="mb-0">Comprehensive profile information</p>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <a href="{% url 'employee_dashboard' %}" class="btn btn-light btn-custom">
+                <i class="fa-solid fa-arrow-left me-2"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <!-- Profile Card -->
+        <div class="col-lg-4 mb-4">
+            <div class="profile-card text-center">
+
+                <!-- =============================================
+                     PROFILE PICTURE + CAMERA ICON
+                ============================================== -->
+                <div class="profile-picture-wrapper" id="profilePictureWrapper">
+                    {% if employee.profile_picture %}
+                        <img src="{{ employee.profile_picture.url }}"
+                             class="profile-image"
+                             id="profilePreviewImg">
+                    {% elif not employee.user.employee_profile.profile_picture %}
+                        <div class="avatar-placeholder"
+                             id="profileAvatarPlaceholder">
+                            {{ employee.user.username|default:"A"|first|upper }}
+                        </div>
+                    {% else %}
+                        <img src="{% static 'icons/default_avatar.png' %}"
+                             class="profile-image"
+                             id="profilePreviewImg">
+                    {% endif %}
+
+                    <!-- Camera Icon Overlay -->
+                    <button class="camera-btn" id="cameraBtn" title="Update Profile Picture">
+                        <i class="fa-solid fa-camera"></i>
+                    </button>
+
+                </div>
+                <!-- end profile-picture-wrapper -->
+
+                <p class="text-muted mb-2 text-capitalize mt-3">
+                    {{ employee.user.first_name }} {{ employee.user.last_name }}
+                </p>
+                <h4 class="fw-bold">{{ employee.emp_id }}</h4>
+
+                <div class="mt-3">
+                    <a href="{% url 'edit_employee_basic' %}" class="btn btn-primary btn-custom w-100 mb-2">
+                        <i class="fa-solid fa-pen me-2"></i>Edit Profile
+                    </a>
+                    <a href="{% url 'change_password' %}" class="btn btn-primary btn-custom w-100 mb-2">
+                        <i class="fa-solid fa-key me-2"></i>Change Password
+                    </a>
+                    {% if request.user.is_staff %}
+                        <a href="{% url 'edit_add_employee' employee.user.id %}" class="btn btn-dark btn-custom w-100">
+                            <i class="fa-solid fa-user-gear me-2"></i>Edit Admin Data
+                        </a>
+                    {% endif %}
+                </div>
+
+                {% include "employees/identity_card.html" %}
+            </div>
+        </div>
+
+        <!-- Information Card -->
+        <div class="col-lg-8 mb-4">
+            <div class="profile-card">
+                <h4 class="section-title">Basic Information</h4>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Employee ID</div>
+                        <div class="info-value">{{ employee.emp_id }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{ employee.user.email }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Phone</div>
+                        <div class="info-value">{{ employee.phone }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Gender</div>
+                        <div class="info-value">{{ employee.gender }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Date of Birth</div>
+                        <div class="info-value">{{ employee.date_of_birth }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Emergency Contact</div>
+                        <div class="info-value">{{ employee.emergency_contact_phone }}</div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="info-label">Address</div>
+                        <div class="info-value">{{ employee.address }}</div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="info-label">Department</div>
+                        <div class="info-value">{{ employee.department }}</div>
+                    </div>
+                </div>
+
+                <hr>
+                <h4 class="section-title">Department Data</h4>
+                {% if employee.admin_data %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Role</div>
+                        <div class="info-value">{{ employee.admin_data.role }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Designation</div>
+                        <div class="info-value">{{ employee.admin_data.designation }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Joining Date</div>
+                        <div class="info-value">{{ employee.admin_data.joining_date }}</div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted">No admin data available for this employee.</p>
+                {% endif %}
+
+                <hr>
+                <h4 class="section-title">Salary Details</h4>
+                {% if payroll %}
+                <style>
+                .accordion-toggle { cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid #ddd; margin-bottom: 0; }
+                .accordion-toggle h6 { margin: 0; font-size: 14px; font-weight: 500; }
+                .accordion-toggle .arrow { transition: transform 0.25s ease; font-size: 18px; }
+                .accordion-toggle.open .arrow { transform: rotate(180deg); }
+                .accordion-body { display: none; padding-top: 12px; }
+                .accordion-body.open { display: block; }
+                </style>
+
+                <div class="accordion-item mb-2">
+                    <div class="accordion-toggle" onclick="toggleAccordion(this)">
+                        <h6><i class="ti ti-cash me-2"></i>Earnings</h6>
+                        <span class="arrow">&#8964;</span>
+                    </div>
+                    <div class="accordion-body">
+                        <div class="row mt-2">
+                            <div class="col-md-6 mb-3"><div class="info-label">Basic Salary</div><div class="info-value">₹{{ payroll.basic_salary }} / <span class="text-muted">{{payroll.earned_basic_salary}}</span></div></div>
+                            <div class="col-md-6 mb-3"><div class="info-label">HRA</div><div class="info-value">₹{{ payroll.hra }} / <span class="text-muted">{{payroll.earned_hra}}</span></div></div>
+                            <div class="col-md-6 mb-3"><div class="info-label">SA (Special Allowance)</div><div class="info-value">₹{{ payroll.da }} / <span class="text-muted">{{payroll.earned_da}}</span></div></div>
+                            <div class="col-md-6 mb-3"><div class="info-label">Bonus</div><div class="info-value">₹{{ payroll.bonus }} {% if payroll.bonus_remark %}<span class="text-muted">({{payroll.bonus_remark}})</span>{% endif %} <span class="text-muted">{{payroll.earned_bonus}}</span></div></div>
+                            <div class="col-md-6 mb-3"><div class="info-label">Gross Salary</div><div class="info-value fw-bold">₹{{ gross_salary }} / <span class="text-muted">{{payroll.earned_gross_salary}}</span></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item mb-2">
+                    <div class="accordion-toggle" onclick="toggleAccordion(this)">
+                        <h6><i class="ti ti-calendar-stats me-2"></i>Attendance Summary</h6>
+                        <span class="arrow">&#8964;</span>
+                    </div>
+                    <div class="accordion-body">
+                        <div class="row mt-2">
+                            <div class="col-md-4 mb-3"><div class="info-label">Total Working Days</div><div class="info-value">{{ total_month_days }}</div></div>
+                            <div class="col-md-4 mb-3"><div class="info-label">Sundays</div><div class="info-value">{{ total_sundays }}</div></div>
+                            <div class="col-md-4 mb-3"><div class="info-label">2nd Saturday</div><div class="info-value">{% if second_saturday %}{{ second_saturday }}{% else %}—{% endif %}</div></div>
+                            <div class="col-md-4 mb-3"><div class="info-label">Present Days</div><div class="info-value">{{ present_days }}</div></div>
+                            <div class="col-md-4 mb-3"><div class="info-label">Late Days</div><div class="info-value">{{ late_days }}</div></div>
+                            <div class="col-md-4 mb-3"><div class="info-label">Leave Days (Paid)</div><div class="info-value">{{ leave_days }}</div></div>
+                            <div class="col-md-4 mb-3"><div class="info-label">Half Days</div><div class="info-value">{{ half_day_days }}</div></div>
+                            <div class="col-md-4 mb-3"><div class="info-label">Absent Days</div><div class="info-value text-danger">{{ absent_days }}</div></div>
+                            <div class="col-md-4 mb-3"><div class="info-label">Payable Days</div><div class="info-value fw-bold">{{ payable_days }}</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item mb-2">
+                    <div class="accordion-toggle" onclick="toggleAccordion(this)">
+                        <h6><i class="ti ti-calculator me-2"></i>Per Day Breakdown</h6>
+                        <span class="arrow">&#8964;</span>
+                    </div>
+                    <div class="accordion-body">
+                        <div class="row mt-2">
+                            <div class="col-md-6 mb-3"><div class="info-label">Per Day Salary</div><div class="info-value">₹{{ per_day_salary }}</div></div>
+                            <div class="col-md-6 mb-3"><div class="info-label">Half Day Salary</div><div class="info-value">₹{{ half_day_salary }}</div></div>
+                            <div class="col-md-6 mb-3"><div class="info-label">Cut Days</div><div class="info-value text-danger">{{ cut_days }}</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item mb-2">
+                    <div class="accordion-toggle" onclick="toggleAccordion(this)">
+                        <h6><i class="ti ti-minus me-2"></i>Deductions</h6>
+                        <span class="arrow">&#8964;</span>
+                    </div>
+                    <div class="accordion-body">
+                        <div class="row mt-2">
+                            <div class="col-md-6 mb-3"><div class="info-label">Fixed Deductions</div><div class="info-value text-danger">₹{{ payroll.deductions }} {% if payroll.deduction_remark %}<span class="text-muted">({{payroll.deduction_remark}})</span>{% endif %}</div></div>
+                            <div class="col-md-6 mb-3"><div class="info-label">Attendance Deduction</div><div class="info-value text-danger">₹{{ attendance_deduction }}</div></div>
+                            <div class="col-md-6 mb-3"><div class="info-label">Total Deduction</div><div class="info-value fw-bold text-danger">₹{{ total_deduction }}</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item mb-2">
+                    <div class="accordion-toggle" onclick="toggleAccordion(this)">
+                        <h6><i class="ti ti-wallet me-2"></i>Net Pay</h6>
+                        <span class="arrow">&#8964;</span>
+                    </div>
+                    <div class="accordion-body">
+                        <div class="row mt-2">
+                            <div class="col-md-6 mb-3">
+                                <div class="info-label">Net Salary</div>
+                                <div class="info-value fw-bold text-success fs-5">₹{{ net_salary }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                function toggleAccordion(toggle) {
+                    toggle.classList.toggle('open');
+                    toggle.nextElementSibling.classList.toggle('open');
+                }
+                </script>
+
+                {% else %}
+                <p class="text-muted">No payroll record found for {{ month }}/{{ year }}.</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- =====================================================================
+     PROFILE PICTURE UPDATE MODAL
+====================================================================== -->
+<div class="pp-overlay" id="ppOverlay"></div>
+
+<div class="pp-modal" id="ppModal" role="dialog" aria-modal="true" aria-labelledby="ppModalTitle">
+
+    <!-- Modal Header -->
+    <div class="pp-modal-header">
+        <h5 class="pp-modal-title" id="ppModalTitle">
+            <i class="fa-solid fa-image me-2"></i>Update Profile Picture
+        </h5>
+        <button class="pp-close-btn" id="ppCloseBtn" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- Tab Switcher -->
+    <div class="pp-tabs">
+        <button class="pp-tab active" data-tab="upload">
+            <i class="fa-solid fa-upload me-1"></i> Upload Photo
+        </button>
+        <button class="pp-tab" data-tab="avatar">
+            <i class="fa-solid fa-icons me-1"></i> Choose Avatar
+        </button>
+    </div>
+
+    <!-- ── TAB 1: Upload Photo ── -->
+    <div class="pp-tab-content active" id="tab-upload">
+
+        <form method="POST"
+              action="{% url 'update_profile_picture' %}"
+              enctype="multipart/form-data"
+              id="uploadForm">
+            {% csrf_token %}
+            <input type="hidden" name="update_type" value="upload">
+
+            <!-- Drop Zone -->
+            <div class="pp-dropzone" id="dropZone">
+                <div class="pp-dropzone-icon">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+                <p class="pp-dropzone-text">Drag & drop your photo here</p>
+                <p class="pp-dropzone-sub">or</p>
+                <label for="profileImageInput" class="pp-browse-btn">
+                    <i class="fa-solid fa-folder-open me-2"></i>Browse Files
+                </label>
+                <input type="file"
+                       id="profileImageInput"
+                       name="profile_picture"
+                       accept="image/*"
+                       style="display:none;">
+                <p class="pp-dropzone-hint">PNG, JPG, JPEG — max 5 MB</p>
+            </div>
+
+            <!-- Preview -->
+            <div class="pp-preview-area" id="uploadPreviewArea" style="display:none;">
+                <img src="" id="uploadPreviewImg" class="pp-preview-img" alt="Preview">
+                <button type="button" class="pp-remove-btn" id="removeUploadBtn">
+                    <i class="fa-solid fa-trash me-1"></i> Remove
+                </button>
+            </div>
+
+            <!-- Actions -->
+            <div class="pp-actions">
+                <button type="button" class="pp-btn pp-btn-secondary" id="cancelUploadBtn">
+                    Cancel
+                </button>
+                <button type="submit" class="pp-btn pp-btn-primary" id="saveUploadBtn" disabled>
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Save Photo
+                </button>
+            </div>
+        </form>
+
+    </div>
+
+    <!-- ── TAB 2: Choose Avatar ── -->
+    <div class="pp-tab-content" id="tab-avatar">
+
+        <form method="POST"
+              action="{% url 'update_profile_picture' %}"
+              id="avatarForm">
+            {% csrf_token %}
+            <input type="hidden" name="update_type" value="avatar">
+            <input type="hidden" name="avatar_name" id="selectedAvatarInput" value="">
+
+            <p class="pp-avatar-hint">
+                <i class="fa-solid fa-hand-pointer me-1"></i>
+                Click an avatar to select it
+            </p>
+
+            <!-- Avatar Grid -->
+            <div class="pp-avatar-grid" id="avatarGrid">
+                <!--
+                    Replace these with your actual icon filenames.
+                    Path pattern: {% static 'icons/<filename>' %}
+                    Add/remove <div class="pp-avatar-item"> blocks as needed.
+                -->
+                {% for avatar in avatar_list %}
+                <div class="pp-avatar-item" data-avatar="{{ avatar }}">
+                    <img src="{% static 'icons/' %}{{ avatar }}"
+                         alt="{{ avatar|default:"Avatar" }}"
+                         class="pp-avatar-img">
+                    <span class="pp-avatar-check">
+                        <i class="fa-solid fa-check"></i>
+                    </span>
+                </div>
+                {% empty %}
+                <!-- Fallback: hardcoded example avatars (remove once avatar_list is passed) -->
+                <div class="pp-avatar-item" data-avatar="avatar_01.png">
+                    <img src="{% static 'icons/avatar_01.png' %}" alt="Avatar 1" class="pp-avatar-img">
+                    <span class="pp-avatar-check"><i class="fa-solid fa-check"></i></span>
+                </div>
+                <div class="pp-avatar-item" data-avatar="avatar_02.png">
+                    <img src="{% static 'icons/avatar_02.png' %}" alt="Avatar 2" class="pp-avatar-img">
+                    <span class="pp-avatar-check"><i class="fa-solid fa-check"></i></span>
+                </div>
+                <div class="pp-avatar-item" data-avatar="avatar_03.png">
+                    <img src="{% static 'icons/avatar_03.png' %}" alt="Avatar 3" class="pp-avatar-img">
+                    <span class="pp-avatar-check"><i class="fa-solid fa-check"></i></span>
+                </div>
+                <div class="pp-avatar-item" data-avatar="avatar_04.png">
+                    <img src="{% static 'icons/avatar_04.png' %}" alt="Avatar 4" class="pp-avatar-img">
+                    <span class="pp-avatar-check"><i class="fa-solid fa-check"></i></span>
+                </div>
+                <div class="pp-avatar-item" data-avatar="avatar_05.png">
+                    <img src="{% static 'icons/avatar_05.png' %}" alt="Avatar 5" class="pp-avatar-img">
+                    <span class="pp-avatar-check"><i class="fa-solid fa-check"></i></span>
+                </div>
+                <div class="pp-avatar-item" data-avatar="avatar_06.png">
+                    <img src="{% static 'icons/avatar_06.png' %}" alt="Avatar 6" class="pp-avatar-img">
+                    <span class="pp-avatar-check"><i class="fa-solid fa-check"></i></span>
+                </div>
+                <div class="pp-avatar-item" data-avatar="avatar_01.jpg">
+                    <img src="{% static 'icons/avatar_01.jpg' %}" alt="Avatar 1" class="pp-avatar-img">
+                    <span class="pp-avatar-check"><i class="fa-solid fa-check"></i></span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Actions -->
+            <div class="pp-actions">
+                <button type="button" class="pp-btn pp-btn-secondary" id="cancelAvatarBtn">
+                    Cancel
+                </button>
+                <button type="submit" class="pp-btn pp-btn-primary" id="saveAvatarBtn" disabled>
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Save Avatar
+                </button>
+            </div>
+        </form>
+
+    </div>
+
+</div>
+<!-- end pp-modal -->
+
+
+<!-- =====================================================================
+     STYLES
+====================================================================== -->
+<style>
+
+/* ── Profile picture wrapper ── */
+.profile-picture-wrapper {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 15px;
+    cursor: pointer;
+}
+
+.profile-picture-wrapper .profile-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 3px solid #e5e7eb;
+    transition: filter 0.25s ease;
+}
+
+.profile-picture-wrapper:hover .profile-image,
+.profile-picture-wrapper:hover .avatar-placeholder {
+    filter: brightness(0.75);
+}
+
+.avatar-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+    color: #6b7280;
+    font-size: 2rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: filter 0.25s ease;
+    border: 3px solid #d1d5db;
+}
+
+/* ── Camera button ── */
+.camera-btn {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #1d4ed8;
+    color: #fff;
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: background 0.2s, transform 0.15s;
+    z-index: 2;
+}
+
+.camera-btn:hover {
+    background: #1e40af;
+    transform: scale(1.1);
+}
+
+/* ── Overlay ── */
+.pp-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(3px);
+    z-index: 1050;
+}
+
+.pp-overlay.active { display: block; }
+
+/* ── Modal ── */
+.pp-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -48%) scale(0.96);
+    width: min(520px, 94vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+    z-index: 1055;
+    opacity: 0;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.pp-modal.active {
+    display: block;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* ── Modal header ── */
+.pp-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.pp-modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+.pp-close-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+}
+
+.pp-close-btn:hover {
+    background: #f3f4f6;
+    color: #111;
+}
+
+/* ── Tabs ── */
+.pp-tabs {
+    display: flex;
+    padding: 12px 24px 0;
+    gap: 8px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.pp-tab {
+    flex: 1;
+    padding: 10px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.pp-tab.active {
+    color: #1d4ed8;
+    border-bottom-color: #1d4ed8;
+}
+
+/* ── Tab content ── */
+.pp-tab-content {
+    display: none;
+    padding: 20px 24px;
+}
+
+.pp-tab-content.active { display: block; }
+
+/* ── Drop zone ── */
+.pp-dropzone {
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 36px 20px;
+    text-align: center;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+}
+
+.pp-dropzone.drag-over {
+    border-color: #1d4ed8;
+    background: #eff6ff;
+}
+
+.pp-dropzone-icon {
+    font-size: 40px;
+    color: #93c5fd;
+    margin-bottom: 12px;
+}
+
+.pp-dropzone-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 2px;
+}
+
+.pp-dropzone-sub {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 12px;
+}
+
+.pp-browse-btn {
+    display: inline-block;
+    padding: 8px 20px;
+    background: #1d4ed8;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-bottom: 12px;
+}
+
+.pp-browse-btn:hover { background: #1e40af; }
+
+.pp-dropzone-hint {
+    font-size: 11px;
+    color: #9ca3af;
+    margin: 0;
+}
+
+/* ── Upload preview ── */
+.pp-preview-area {
+    text-align: center;
+    padding: 16px 0 0;
+}
+
+.pp-preview-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e5e7eb;
+    margin-bottom: 10px;
+}
+
+.pp-remove-btn {
+    background: none;
+    border: 1px solid #fca5a5;
+    color: #ef4444;
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.pp-remove-btn:hover { background: #fef2f2; }
+
+/* ── Avatar hint ── */
+.pp-avatar-hint {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 14px;
+}
+
+/* ── Avatar grid ── */
+.pp-avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 12px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 4px 2px;
+}
+
+.pp-avatar-item {
+    position: relative;
+    border-radius: 12px;
+    border: 2px solid #e5e7eb;
+    padding: 6px;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+}
+
+.pp-avatar-item:hover {
+    border-color: #93c5fd;
+    background: #eff6ff;
+    transform: translateY(-2px);
+}
+
+.pp-avatar-item.selected {
+    border-color: #1d4ed8;
+    background: #eff6ff;
+}
+
+.pp-avatar-img {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto;
+}
+
+.pp-avatar-check {
+    display: none;
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    background: #1d4ed8;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 10px;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+}
+
+.pp-avatar-item.selected .pp-avatar-check {
+    display: flex;
+}
+
+/* ── Actions ── */
+.pp-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.pp-btn {
+    padding: 9px 22px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, opacity 0.2s;
+}
+
+.pp-btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.pp-btn-secondary:hover { background: #e5e7eb; }
+
+.pp-btn-primary {
+    background: #1d4ed8;
+    color: #fff;
+}
+
+.pp-btn-primary:hover:not(:disabled) { background: #1e40af; }
+
+.pp-btn-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+</style>
+
+
+<!-- =====================================================================
+     JAVASCRIPT
+====================================================================== -->
+<script>
+(function () {
+
+    // ── Elements ──────────────────────────────────────────────
+    const overlay        = document.getElementById('ppOverlay');
+    const modal          = document.getElementById('ppModal');
+    const cameraBtn      = document.getElementById('cameraBtn');
+    const profileWrapper = document.getElementById('profilePictureWrapper');
+    const closeBtn       = document.getElementById('ppCloseBtn');
+    const tabs           = document.querySelectorAll('.pp-tab');
+    const tabContents    = document.querySelectorAll('.pp-tab-content');
+
+    // Upload tab
+    const dropZone          = document.getElementById('dropZone');
+    const fileInput         = document.getElementById('profileImageInput');
+    const uploadPreviewArea = document.getElementById('uploadPreviewArea');
+    const uploadPreviewImg  = document.getElementById('uploadPreviewImg');
+    const removeUploadBtn   = document.getElementById('removeUploadBtn');
+    const saveUploadBtn     = document.getElementById('saveUploadBtn');
+    const cancelUploadBtn   = document.getElementById('cancelUploadBtn');
+
+    // Avatar tab
+    const avatarItems       = document.querySelectorAll('.pp-avatar-item');
+    const selectedAvatarInput = document.getElementById('selectedAvatarInput');
+    const saveAvatarBtn     = document.getElementById('saveAvatarBtn');
+    const cancelAvatarBtn   = document.getElementById('cancelAvatarBtn');
+
+    // ── Open / Close ──────────────────────────────────────────
+    function openModal() {
+        overlay.classList.add('active');
+        // Use requestAnimationFrame to trigger CSS transition
+        requestAnimationFrame(() => modal.classList.add('active'));
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        modal.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // Camera button OR clicking anywhere on the wrapper opens modal
+    cameraBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        openModal();
+    });
+
+    profileWrapper.addEventListener('click', openModal);
+
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', closeModal);
+    cancelUploadBtn.addEventListener('click', closeModal);
+    cancelAvatarBtn.addEventListener('click', closeModal);
+
+    // Close on Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeModal();
+    });
+
+    // ── Tab switching ─────────────────────────────────────────
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            const target = this.dataset.tab;
+
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+
+            this.classList.add('active');
+            document.getElementById('tab-' + target).classList.add('active');
+        });
+    });
+
+    // ── Upload Tab: file input & drag-drop ────────────────────
+    function handleFile(file) {
+        if (!file || !file.type.startsWith('image/')) return;
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File is too large. Maximum size is 5 MB.');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            uploadPreviewImg.src    = e.target.result;
+            uploadPreviewArea.style.display = 'block';
+            dropZone.style.display  = 'none';
+            saveUploadBtn.disabled  = false;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    fileInput.addEventListener('change', function () {
+        handleFile(this.files[0]);
+    });
+
+    dropZone.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        this.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', function () {
+        this.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+        handleFile(e.dataTransfer.files[0]);
+
+        // Sync to file input so form submits the file
+        const dt      = new DataTransfer();
+        dt.items.add(e.dataTransfer.files[0]);
+        fileInput.files = dt.files;
+    });
+
+    // Click on drop zone also opens file picker
+    dropZone.addEventListener('click', function () {
+        fileInput.click();
+    });
+
+    removeUploadBtn.addEventListener('click', function () {
+        fileInput.value          = '';
+        uploadPreviewImg.src     = '';
+        uploadPreviewArea.style.display = 'none';
+        dropZone.style.display   = 'block';
+        saveUploadBtn.disabled   = true;
+    });
+
+    // ── Avatar Tab: selection ─────────────────────────────────
+    avatarItems.forEach(function (item) {
+        item.addEventListener('click', function () {
+            avatarItems.forEach(i => i.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedAvatarInput.value = this.dataset.avatar;
+            saveAvatarBtn.disabled    = false;
+        });
+    });
+
+})();
+</script>
+{% endblock %}

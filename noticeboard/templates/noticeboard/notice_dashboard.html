@@ -1,0 +1,308 @@
+{% extends "layouts/main_layout.html" %}
+
+{% block title %}
+Notice Dashboard
+{% endblock %}
+
+{% block page_content %}
+
+<style>
+
+    .notice-wrapper{
+        padding:20px;
+    }
+
+    .notice-grid{
+        display:grid;
+        {% if request.user.is_staff %}
+            grid-template-columns:340px 1fr;
+        {% else %}
+            grid-template-columns:auto 1fr;
+        {% endif %}
+        gap:20px;
+    }
+
+    .notice-card{
+        background:#fff;
+        border-radius:16px;
+        padding:22px;
+        box-shadow:0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .notice-title{
+        font-size:22px;
+        font-weight:700;
+        margin-bottom:20px;
+        color:#1e293b;
+    }
+
+    .form-control,
+    .form-select{
+        border-radius:10px;
+        padding:12px;
+        margin-bottom:14px;
+        border:1px solid #dbe2ea;
+    }
+
+    .form-control:focus,
+    .form-select:focus{
+        border-color:#2563eb;
+        box-shadow:0 0 0 3px rgba(37,99,235,0.1);
+    }
+
+    textarea{
+        resize:none;
+    }
+
+    .btn-submit{
+        width:100%;
+        border:none;
+        padding:12px;
+        border-radius:10px;
+        background:#2563eb;
+        color:#fff;
+        font-weight:600;
+        transition:0.3s;
+    }
+
+    .btn-submit:hover{
+        background:#1d4ed8;
+    }
+
+    .notice-list{
+        display:flex;
+        flex-direction:column;
+        gap:18px;
+    }
+
+    .notice-item{
+        border-left:5px solid #2563eb;
+        padding:18px;
+        background:#f8fafc;
+        border-radius:12px;
+
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+
+        transition:0.3s ease;
+    }
+
+    .notice-item:hover{
+        transform:translateY(-2px);
+    }
+
+    .notice-item.warning{
+        border-color:#dc2626;
+    }
+
+    .notice-item.payroll{
+        border-color:#059669;
+    }
+
+    .notice-item.attendance{
+        border-color:#d97706;
+    }
+
+    .notice-item.general{
+        border-color:#2563eb;
+    }
+
+    .notice-item.holiday{
+        border-color:#7c3aed;
+    }
+
+    .notice-item.meeting{
+        border-color:#0f766e;
+    }
+
+    .notice-item.important{
+        border-color:#ea580c;
+    }
+
+    .notice-head{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:10px;
+    }
+
+    .notice-head h5{
+        margin:0;
+        font-size:18px;
+        font-weight:700;
+        color:#0f172a;
+        line-height:1.5;
+    }
+
+    .badge-type{
+        padding:6px 12px;
+        border-radius:30px;
+        font-size:12px;
+        background:#e2e8f0;
+        font-weight:600;
+        text-transform:capitalize;
+        white-space:nowrap;
+    }
+
+    .notice-message{
+        color:#475569;
+        font-size:14px;
+        line-height:1.8;
+
+        white-space:pre-line;
+        word-break:break-word;
+        overflow-wrap:break-word;
+
+        display:block;
+    }
+
+    .notice-footer{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        flex-wrap:wrap;
+        gap:8px;
+
+        padding-top:10px;
+        border-top:1px solid #e2e8f0;
+
+        font-size:12px;
+        color:#64748b;
+    }
+
+    .empty-box{
+        text-align:center;
+        padding:50px 20px;
+        color:#64748b;
+    }
+
+    .empty-box h5{
+        margin-bottom:10px;
+        font-size:20px;
+        color:#0f172a;
+    }
+
+    @media(max-width:900px){
+
+        .notice-grid{
+            grid-template-columns:1fr;
+        }
+
+    }
+
+</style>
+
+<div class="notice-wrapper">
+
+    <div class="notice-grid">
+
+        <!-- Create Notice -->
+        {% if request.user.is_staff %}
+        <div class="notice-card">
+
+            <div class="notice-title">
+                Create Notice
+            </div>
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                {{ form.title }}
+
+                {{ form.notice_type }}
+
+                {{ form.message_type }}
+
+                {{ form.message }}
+
+                <div class="form-check mb-3">
+
+                    {{ form.is_active }}
+
+                    <label class="form-check-label">
+                        Active Notice
+                    </label>
+
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    Publish Notice
+                </button>
+
+            </form>
+
+        </div>
+        {% endif %}
+
+        <!-- Notice List -->
+
+        <div class="notice-card">
+
+            <div class="notice-title">
+                Mantech HRMS Notice Board
+            </div>
+
+            <div class="notice-list">
+
+                {% for notice in notices %}
+
+                <div class="notice-item {{ notice.message_type }}">
+
+                    <div class="notice-head">
+
+                        <h5>
+                            {{ notice.title }}
+                        </h5>
+
+                        <span class="badge-type">
+                            {{ notice.message_type }}
+                        </span>
+
+                    </div>
+
+                    <div class="notice-message">
+                        {{ notice.message|linebreaksbr }}
+                    </div>
+
+                    <div class="notice-footer">
+
+                        <span>
+                            Notice For:
+                            <strong>
+                                {{ notice.notice_type }}
+                            </strong>
+                        </span>
+
+                        <span>
+                            {{ notice.created_at|date:"d M Y • h:i A" }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div class="empty-box">
+
+                    <h5>No Notices Found</h5>
+
+                    <p>
+                        Create your first HRMS notice for employees.
+                    </p>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

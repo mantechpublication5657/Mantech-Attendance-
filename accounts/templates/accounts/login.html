@@ -1,0 +1,146 @@
+{% extends "layouts/main_layout.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block page_content %}
+
+<style>
+body {
+    background: linear-gradient(135deg, #0f172a, #1e3a8a);
+    font-family: 'Poppins', sans-serif;
+}
+
+/* CENTER LOGIN */
+.login-wrapper {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+/* CARD */
+.login-card {
+    width: 100%;
+    max-width: 360px; /* smaller width */
+    background: #fff;
+    border-radius: 14px;
+    padding: 25px; /* reduced padding */
+    box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+    animation: fadeInUp 0.6s ease;
+    transition: transform 0.3s ease;
+}
+.login-card:hover {
+    transform: translateY(-4px);
+}
+
+/* ICON */
+.icon {
+    font-size: 36px; /* smaller icon */
+    color: #2563eb;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* TITLE */
+.title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 20px; /* smaller title */
+    margin-bottom: 4px;
+}
+
+/* SUBTITLE */
+.subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: gray;
+    margin-bottom: 18px; /* tighter spacing */
+}
+
+/* INPUT */
+.form-control {
+    border-radius: 8px;
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+.form-control:focus {
+    border: 2px solid #2563eb;
+    box-shadow: 0 0 6px rgba(37,99,235,0.3);
+}
+
+/* BUTTON */
+.btn-login {
+    background: linear-gradient(90deg, #2563eb, #1d4ed8);
+    color: white;
+    width: 100%;
+    border-radius: 8px;
+    padding: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+.btn-login:hover {
+    background: linear-gradient(90deg, #1d4ed8, #1e40af);
+    transform: translateY(-2px);
+}
+
+/* LINKS */
+.extra-links {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 13px;
+}
+.extra-links a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+.extra-links a:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+/* ANIMATION */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<div class="login-wrapper">
+    <div class="login-card">
+
+        <div class="icon">
+            <i class="bi bi-buildings"></i>
+        </div>
+
+        <div class="title">Mantech HRMS</div>
+        <div class="subtitle">Employee Login Portal</div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label>Email or Username</label>
+                <input type="text" name="email" class="form-control" placeholder='Email or username' required>
+                <small class="text-muted">Enter your registered email or username.</small>
+            </div>
+
+            <div class="mb-3">
+                <label>Password</label>
+                <input type="password" name="password" class="form-control" placeholder='password...' required>
+            </div>
+
+            <button class="btn btn-login" type="submit">Login</button>
+        </form>
+
+        <!-- Extra Links -->
+        <div class="extra-links">
+            <p><a href="{% url 'reset_password' %}">Forgot Password?</a></p>
+            <p>Don't have an account? <a href="{% url 'signup' %}">Sign Up</a></p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

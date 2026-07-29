@@ -1,0 +1,225 @@
+<style>
+    .nav-item.active{
+        background: linear-gradient(90deg, #2563eb, #3b82f6);
+        color: white;
+        border-radius: 8px;
+    }
+    
+    .administration-link{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        padding:12px 16px;
+        border-radius:10px;
+        font-weight:600;
+        text-decoration:none;
+        transition:0.3s ease;
+    }
+
+    .administration-link i{
+        font-size:18px;
+    }
+
+    .administration-link:hover{
+        transform:translateX(4px);
+    }
+
+
+    /* Dropdown Wrapper */
+    .dropdown-menu-wrapper{
+        width:100%;
+    }
+
+    /* Dropdown Button */
+    .nav-dropdown-toggle{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:12px 15px;
+        cursor:pointer;
+        border-radius:10px;
+        transition:0.3s;
+        font-weight:500;
+        font-size:14px;
+        color:rgba(255,255,255,0.6);
+    }
+
+    .nav-dropdown-toggle:hover{
+        background: linear-gradient(90deg, #2563eb, #3b82f6);
+    }
+
+    /* Dropdown Menu */
+    .nav-dropdown-menu{
+        display:none;
+        flex-direction:column;
+        margin-top:5px;
+        padding-left:10px;
+    }
+
+    /* Show Dropdown */
+    .nav-dropdown-menu.show{
+        display:flex;
+    }
+
+    /* Arrow Rotate */
+    .dropdown-arrow{
+        transition:0.3s;
+    }
+
+    .dropdown-arrow.rotate{
+        transform:rotate(180deg);
+    }
+</style>
+<!-- ── SIDEBAR ── -->
+ {% load static %}
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon"><i class="bi bi-buildings-fill"></i></div>
+            <div class="brand-text">
+                <strong>Mantech</strong>
+                <span>HRMS Platform</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+        {% if request.user.is_authenticated %}
+            <div class="nav-section-label">Main</div>
+                <a href="{% url 'home' %}"
+                    class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                    <i class="bi bi-grid-fill"></i> Dashboard
+                    </a>
+
+                    <a href="{% url 'employee_dashboard' %}"
+                    class="nav-item {% if request.resolver_match.url_name == 'employee_dashboard' %}active{% endif %}">
+                    <i class="bi bi-people-fill"></i> Employees
+                    </a>
+
+                    <a href="{% url 'attendance_dashboard' request.user.id %}"
+                    class="nav-item {% if request.resolver_match.url_name == 'attendance_dashboard' %}active{% endif %}">
+                    <i class="bi bi-calendar3"></i> Attendance
+                    </a>
+
+                    <a href="{% url 'grievance_dashboard' %}"
+                    class="nav-item {% if request.resolver_match.url_name == 'grievance_dashboard' %}active{% endif %}">
+                    <i class="bi bi-briefcase-fill"></i> Grievance
+                </a>
+
+            <!-- Manage Section -->
+            <div class="nav-section-label">Manage</div>
+
+            <div class="dropdown-menu-wrapper">
+
+                <!-- Dropdown Button -->
+                <div class="nav-dropdown-toggle" onclick="toggleManageDropdown()">
+                    <div>
+                        <i class="bi bi-grid-fill"></i> Manage
+                    </div>
+                    <i class="bi bi-chevron-down dropdown-arrow" id="manageArrow"></i>
+                </div>
+
+                <!-- Dropdown Items -->
+                <div class="nav-dropdown-menu" id="manageDropdown">
+
+                    {% if request.user.is_staff or request.user.is_superuser %}
+
+                        {% if request.user.is_superuser %}
+
+                            <a href="{% url 'payroll_dashboard' request.user.id %}"
+                            class="nav-item {% if request.resolver_match.url_name == 'payroll_dashboard' %}active{% endif %}">
+                                <i class="bi bi-cash-stack"></i> Payroll
+                            </a>
+
+                            <a href="{% url 'leave_employee_list' %}"
+                            class="nav-item {% if request.resolver_match.url_name == 'leave_employee_list' %}active{% endif %}">
+                                <i class="bi bi-airplane-fill"></i> Leave
+                            </a>
+
+                            <a href="{% url 'add_holiday' %}"
+                            class="nav-item {% if request.resolver_match.url_name == 'add_holiday' %}active{% endif %}">
+                                <i class="bi bi-calendar-plus"></i> Add Holiday
+                            </a>
+
+                        {% endif %}
+                            
+
+                        <a href="{% url 'missing_attendance_employees' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'missing_attendance_employees' %}active{% endif %}">
+                            <i class="bi bi-bar-chart-fill"></i> Absent
+                        </a>
+
+                    {% endif %}
+
+                    <a href="{% url 'notice_dashboard' %}"
+                    class="nav-item {% if request.resolver_match.url_name == 'notice_dashboard' %}active{% endif %}">
+                        <i class="bi bi-bell-fill"></i> Notices
+
+                        {% if notices_count > 0 %}
+                            <span class="badge-pill">{{ notices_count }}</span>
+                        {% endif %}
+                    </a>
+
+                </div>
+            </div>
+
+        {% endif %}
+            
+            <div class="nav-section-label">System</div>
+            {% if not request.user.is_authenticated %}
+            <a href="{% url "signup" %}" class="nav-item"><i class="bi bi-person-plus"></i> Signup</a>
+            <a href="{% url "login" %}" class="nav-item"><i class="bi bi-person-circle"></i> Login</a>
+            {% else %}
+            
+            {% if request.user.is_staff or request.user.is_superuser %}
+            <a href="/administration/" class="nav-item administration-link">
+                <i class="bi bi-shield-lock"></i>
+                <span>Administration</span>
+            </a>
+            {% endif %}
+
+            <a href="{% url 'logout' %}" class="nav-item"><i class="bi bi-box-arrow-right"></i> Logout</a>
+            <a href="{% url "employee_detail" request.user.id %}" class="nav-item {% if request.resolver_match.url_name == 'employee_detail' %}active{% endif %}"><i class="bi bi-gear-fill"></i> Settings</a>
+            {% endif %}
+        </nav>
+
+        {% if request.user.is_authenticated %}
+        <div class="sidebar-footer">
+            <div class="user-chip">
+                <div class="avatar-wrapper">
+                    <a href="{% url 'employee_detail' request.user.id %}" 
+                        style="display:inline-flex;align-items:center;justify-content:center;
+                        text-decoration:none;border-radius:50%;overflow:hidden;
+                        width:48px;height:48px;transition:transform 0.3s ease;">
+                        {% if request.user.employee_profile.profile_picture %}
+                            <img src="{{ request.user.employee_profile.profile_picture.url }}" 
+                                id="previewImage"
+                                style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">
+                        {% elif not request.user.employee_profile.profile_picture %}
+                                <span class="avatar-placeholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background-color:#e5e7eb;color:#6b7280;font-size:1.5rem;font-weight:bold;">
+                                    {{ request.user.username|default:"A"|first|upper }}
+                                </span>
+                        {% else %}
+                            <img src="{% static 'images/default_profile.png' %}" 
+                                id="previewImage"
+                                style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">
+                        {% endif %}
+                </a>
+                </div>
+                <div class="user-info">
+                    <strong style="text-transform: capitalize;">{{ request.user.username|default:"Admin User" }}</strong>
+                    <span style = "text-transform: capitalize;">{{request.user.role|default:"User"}}</span>
+                </div>
+                <i class="bi bi-three-dots-vertical"></i>
+            </div>
+        </div>
+        {% endif %}
+    </aside>
+
+<script>
+    function toggleManageDropdown() {
+        const dropdown = document.getElementById("manageDropdown");
+        const arrow = document.getElementById("manageArrow");
+
+        dropdown.classList.toggle("show");
+        arrow.classList.toggle("rotate");
+    }
+</script>

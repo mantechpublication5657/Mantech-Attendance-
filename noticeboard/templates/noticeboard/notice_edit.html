@@ -1,0 +1,225 @@
+<!-- templates/notice_edit.html -->
+
+{% extends "layouts/main_layout.html" %}
+
+{% block title %}
+Edit Notice
+{% endblock %}
+
+{% block page_content %}
+
+<style>
+
+.notice-edit-wrapper{
+    padding:20px;
+    display:flex;
+    justify-content:center;
+}
+
+.notice-edit-card{
+    width:100%;
+    max-width:700px;
+
+    background:#fff;
+    border-radius:18px;
+    padding:30px;
+
+    box-shadow:0 4px 20px rgba(0,0,0,0.08);
+}
+
+.notice-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
+
+.notice-head h2{
+    margin:0;
+    font-size:24px;
+    font-weight:700;
+    color:#0f172a;
+}
+
+.back-btn{
+    text-decoration:none;
+    background:#eff6ff;
+    color:#2563eb;
+
+    padding:10px 16px;
+    border-radius:10px;
+
+    font-size:14px;
+    font-weight:600;
+
+    transition:0.3s ease;
+}
+
+.back-btn:hover{
+    background:#2563eb;
+    color:#fff;
+}
+
+.form-control,
+.form-select{
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:16px;
+
+    border:1px solid #dbe2ea;
+}
+
+.form-control:focus,
+.form-select:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 3px rgba(37,99,235,0.1);
+}
+
+textarea{
+    resize:none;
+}
+
+.form-check{
+    margin-bottom:18px;
+}
+
+.btn-update{
+    width:100%;
+    border:none;
+
+    padding:13px;
+    border-radius:12px;
+
+    background:#2563eb;
+    color:#fff;
+
+    font-size:15px;
+    font-weight:600;
+
+    transition:0.3s ease;
+}
+
+.btn-update:hover{
+    background:#1d4ed8;
+}
+
+.notice-preview{
+    margin-top:30px;
+    padding:20px;
+    border-radius:14px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+}
+
+.notice-preview h5{
+    font-size:16px;
+    font-weight:700;
+    margin-bottom:10px;
+    color:#0f172a;
+}
+
+.preview-message{
+    color:#475569;
+    line-height:1.7;
+    font-size:14px;
+}
+
+@media(max-width:768px){
+
+    .notice-edit-card{
+        padding:22px;
+    }
+
+    .notice-head{
+        flex-direction:column;
+        gap:12px;
+        align-items:flex-start;
+    }
+
+}
+
+</style>
+
+<div class="notice-edit-wrapper">
+
+    <div class="notice-edit-card">
+
+        <div class="notice-head">
+
+            <h2>
+
+                <i class="bi bi-pencil-square"
+                   style="color:#2563eb;margin-right:8px;"></i>
+
+                Edit Notice
+
+            </h2>
+
+            <a href="{% url 'notice_dashboard' %}"
+               class="back-btn">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Back
+
+            </a>
+
+        </div>
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            {{ form.title }}
+
+            {{ form.notice_type }}
+
+            {{ form.message_type }}
+
+            {{ form.message }}
+
+            <div class="form-check">
+
+                {{ form.is_active }}
+
+                <label class="form-check-label">
+
+                    Active Notice
+
+                </label>
+
+            </div>
+
+            <button type="submit"
+                    class="btn-update">
+
+                <i class="bi bi-check-circle-fill"
+                   style="margin-right:6px;"></i>
+
+                Update Notice
+
+            </button>
+
+        </form>
+
+        <!-- Preview -->
+
+        <div class="notice-preview">
+
+            <h5>
+                Current Notice Preview
+            </h5>
+
+            <div class="preview-message">
+
+                {{ notice.message|linebreaksbr }}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'layouts/main_layout.html' %}
+{% block title %}Delete Application — Mantech HRMS{% endblock %}
+
+{% block page_content %}
+<div class="container py-5" style="max-width:500px;">
+  <div class="card border-danger shadow-sm" style="border-radius:14px;overflow:hidden;">
+    <div class="card-header bg-danger text-white">
+      <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion</h5>
+    </div>
+    <div class="card-body p-4">
+      <p class="mb-1 text-muted">You are about to permanently delete this application:</p>
+      <p class="fw-bold fs-5">{{ grievance.subject }}</p>
+      <p class="text-muted small">Category: {{ grievance.get_category_display }} · Submitted {{ grievance.created_at|date:"M d, Y" }}</p>
+      <hr>
+      <p class="text-danger"><strong>This action cannot be undone.</strong></p>
+      <form method="post" class="d-flex gap-2 mt-3">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger" style="border-radius:8px;">
+          <i class="fas fa-trash me-1"></i> Yes, Delete
+        </button>
+        <a href="{% url 'grievance_list' %}" class="btn btn-outline-secondary" style="border-radius:8px;">
+          Cancel
+        </a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

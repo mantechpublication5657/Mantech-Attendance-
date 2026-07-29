@@ -1,0 +1,133 @@
+{% extends 'layouts/main_layout.html' %}
+{% load static %}
+
+{% block title %}My Applications — Mantech HRMS{% endblock %}
+
+{% block extra_css %}
+<style>
+  .grievance-header {
+    background: linear-gradient(135deg, #1a237e 0%, #283593 60%, #1565c0 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    color: #fff;
+    margin-bottom: 2rem;
+  }
+  .grievance-header h2 { font-weight: 700; margin: 0; }
+  .grievance-header p  { opacity: .8; margin: .3rem 0 0; }
+
+  .btn-new-application {
+    background: #fff;
+    color: #1a237e;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: .6rem 1.4rem;
+    border: none;
+    transition: box-shadow .2s;
+  }
+  .btn-new-application:hover { box-shadow: 0 4px 16px rgba(0,0,0,.18); color: #1a237e; }
+
+  .grievance-card {
+    border: 1.5px solid #e3e8f0;
+    border-radius: 10px;
+    background: #fff;
+    margin-bottom: 1rem;
+    transition: box-shadow .2s, border-color .2s;
+  }
+  .grievance-card:hover { box-shadow: 0 4px 18px rgba(26,35,126,.08); border-color: #7986cb; }
+
+  .badge-pending   { background: #fff3e0; color: #e65100; }
+  .badge-reviewed  { background: #e3f2fd; color: #1565c0; }
+  .badge-resolved  { background: #e8f5e9; color: #2e7d32; }
+  .badge-rejected  { background: #fce4ec; color: #b71c1c; }
+
+  .category-pill {
+    font-size: .75rem;
+    background: #ede7f6;
+    color: #4527a0;
+    border-radius: 20px;
+    padding: .2rem .75rem;
+    font-weight: 600;
+    letter-spacing: .03em;
+  }
+  .reply-badge {
+    font-size: .72rem;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-radius: 20px;
+    padding: .18rem .65rem;
+  }
+  .empty-state { text-align: center; padding: 4rem 1rem; color: #90a4ae; }
+  .empty-state i { font-size: 3rem; margin-bottom: 1rem; display: block; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid py-4">
+
+  <!-- Header -->
+  <div class="grievance-header d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+      <h2><i class="fas fa-file-alt me-2"></i>My Applications & Issues</h2>
+      <p>Submit, track and manage your HR applications and grievances.</p>
+    </div>
+    <a href="{% url 'grievance_create' %}" class="btn btn-new-application">
+      <i class="fas fa-plus me-1"></i> New Application
+    </a>
+  </div>
+
+  <!-- List -->
+  {% if grievances %}
+    {% for g in grievances %}
+    <div class="grievance-card p-3 px-4">
+      <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
+        <div>
+          <span class="category-pill">{{ g.get_category_display }}</span>
+          {% if g.has_admin_reply %}
+            <span class="reply-badge ms-1"><i class="fas fa-reply me-1"></i>Admin Replied</span>
+          {% endif %}
+          <h6 class="mt-2 mb-1 fw-600">
+            <a href="{% url 'grievance_detail' g.pk %}" class="text-dark text-decoration-none">
+              {{ g.subject }}
+            </a>
+          </h6>
+          <small class="text-muted">
+            Submitted {{ g.created_at|date:"M d, Y" }}
+            {% if g.updated_at != g.created_at %}· Updated {{ g.updated_at|date:"M d, Y" }}{% endif %}
+          </small>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 mt-1">
+          <span class="badge rounded-pill badge-{{ g.status }} px-3 py-2">
+            {{ g.get_status_display }}
+          </span>
+
+          {% if g.status == 'pending' %}
+          <a href="{% url 'grievance_edit' g.pk %}" class="btn btn-sm btn-outline-secondary" title="Edit">
+            <i class="fas fa-pen"></i>
+          </a>
+          <a href="{% url 'grievance_delete' g.pk %}" class="btn btn-sm btn-outline-danger" title="Delete">
+            <i class="fas fa-trash"></i>
+          </a>
+          {% endif %}
+
+          <a href="{% url 'grievance_detail' g.pk %}" class="btn btn-sm btn-outline-primary" title="View">
+            <i class="fas fa-eye"></i>
+          </a>
+        </div>
+      </div>
+      <p class="text-muted small mt-2 mb-0" style="max-width:600px;">
+        {{ g.message|truncatechars:120 }}
+      </p>
+    </div>
+    {% endfor %}
+
+  {% else %}
+    <div class="empty-state">
+      <i class="fas fa-inbox"></i>
+      <h5>No Applications Yet</h5>
+      <p>Click <strong>New Application</strong> to submit your first issue or request.</p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
