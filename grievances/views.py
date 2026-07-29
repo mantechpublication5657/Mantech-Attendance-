@@ -9,10 +9,7 @@ from django.utils import timezone
 
 from .models import Grievance, GrievanceReply, AdminNotification, GrievanceCategory
 from .forms import GrievanceForm, AdminReplyForm
-
-
-def is_admin(user):
-    return user.is_staff or user.is_superuser
+from accounts.permissions import is_admin
 
 
 # ─────────────────────────────────────────────
@@ -28,7 +25,7 @@ def grievance_dashboard(request):
     """
     user = request.user
 
-    if user.is_staff or user.is_superuser:
+    if is_admin(user):
         # ── Admin stats ──────────────────────────
         all_grievances   = Grievance.objects.select_related('employee').order_by('-created_at')
         total            = all_grievances.count()

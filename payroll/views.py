@@ -16,8 +16,7 @@ from datetime import date, timedelta
 from django.utils.timezone import localdate
 
 User = get_user_model()
-def is_admin(user):
-    return user.is_staff or user.is_superuser
+from accounts.permissions import is_admin, owner_or_admin_required
 
 from django.db.models import OuterRef, Subquery  # add this at the top of views.py
 
@@ -263,10 +262,6 @@ def edit_payroll(request, user_id, month, year):
 # PAYROLL DETAIL (Admin only)
 # -------------------------------
 
-
-def is_admin(user):
-    return user.is_staff or user.is_superuser
-
 @user_passes_test(is_admin)
 def payroll_detail(request, user_id, month, year):
 
@@ -495,12 +490,8 @@ from .salary_slip_report import (
 )
 
 
-def is_admin(user):
-    return user.is_staff
-
-
 # =========================================================
-# DOWNLOAD SALARY SLIP VIEW
+# DOWNLOAD SALARY SLIP
 # =========================================================
 
 import calendar
@@ -515,31 +506,9 @@ from employees.models import EmployeeProfile
 from attendance.models import Attendance
 from payroll.models import Payroll
 
-from .salary_slip_report import (
-    generate_salary_slip,
-    salary_slip_response
-)
-
-
-# =========================================================
-# ADMIN CHECK
-# =========================================================
-
-def is_admin(user):
-    return user.is_staff
-
-
-# =========================================================
-# DOWNLOAD SALARY SLIP
-# =========================================================
-
-from .salary_slip_report import (
-    generate_salary_slip,
-    salary_slip_response
-)
-
 
 @login_required
+@owner_or_admin_required
 def download_salary_slip(request, user_id, month, year):
 
     # =====================================================

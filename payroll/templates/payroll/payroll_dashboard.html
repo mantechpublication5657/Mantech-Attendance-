@@ -96,7 +96,7 @@
                                     <span>Payroll</span>
                                 </a>
 
-                                {% if request.user.is_superuser %}
+                                {% if request.user.is_staff or request.user.is_superuser %}
                                 <!-- EDIT PAYROLL -->
                                 <a href="{% url 'edit_payroll' emp.user.id current_month current_year %}"
                                 class="mhrms-action-btn mhrms-edit-btn">
@@ -115,7 +115,7 @@
 
                             {% else %}
 
-                                {% if request.user.is_superuser %}
+                                {% if request.user.is_staff or request.user.is_superuser %}
                                 <!-- ADD PAYROLL -->
                                 <a href="{% url 'add_payroll' emp.user.id current_month current_year %}"
                                 class="mhrms-action-btn mhrms-download-btn">

@@ -93,5 +93,18 @@ class AdminControlledData(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Keep Django's is_staff flag (the flag every permission check in the
+        # app actually relies on) in sync with the HR-facing role field.
+        # 'manager' intentionally does NOT grant is_staff, since is_staff also
+        # gates the Django admin site (/administration/) and manager is a
+        # reporting-line concept, not an admin-access one.
+        user = self.profile.user
+        should_be_staff = self.role in ('admin', 'hr')
+        if user.is_staff != should_be_staff:
+            user.is_staff = should_be_staff
+            user.save(update_fields=['is_staff'])
+
     def __str__(self):
         return f"{self.profile.emp_id} - {self.role} - {self.designation or 'No Designation'}"

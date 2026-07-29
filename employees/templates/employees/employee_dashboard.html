@@ -275,7 +275,7 @@
          avg_salary, recent_payrolls, dept_labels,
          dept_counts, payroll_years, payroll_totals
     ═══════════════════════════════════════════ -->
-    {% if request.user.is_superuser %}
+    {% if request.user.is_staff or request.user.is_superuser %}
     <div id="adminReport" class="section-card" style="border-color:#e0e7ff;">
  
         <!-- Title row -->
@@ -289,7 +289,7 @@
                     {% if request.user.is_superuser %}Superuser{% else %}Staff{% endif %}
                 </span>
             </h4>
-            {% if request.user.is_superuser %}
+            {% if request.user.is_staff or request.user.is_superuser %}
             <div class="dl-row">
                 <a href="{% url 'payroll_report_download' %}?format=csv&filter_type={{ filter_type }}&month={{ filter_month }}&year={{ filter_year }}"
                    class="dlbtn dlbtn-csv">

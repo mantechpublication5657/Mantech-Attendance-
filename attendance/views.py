@@ -19,8 +19,10 @@ import calendar
 
 from .models import Attendance
 from employees.models import EmployeeProfile
-    
+from accounts.permissions import owner_or_admin_required
+
 @login_required
+@owner_or_admin_required
 def attendance_home(request, user_id):
 
     today = localdate()

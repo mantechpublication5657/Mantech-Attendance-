@@ -31,6 +31,7 @@ from reportlab.platypus import (
 
 from .models import Attendance
 from accounts.models import User
+from accounts.permissions import owner_or_admin_required
 
 
 # =========================================================
@@ -713,6 +714,7 @@ def generate_attendance_pdf(user, month, year):
 # =========================================================
 
 @login_required
+@owner_or_admin_required
 def download_attendance_pdf(request, user_id):
 
     today = localdate()

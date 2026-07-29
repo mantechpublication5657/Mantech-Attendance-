@@ -1,11 +1,10 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import User, OTP
+from .models import User
 
 
 admin.site.register(User)
-# admin.site.register(OTP)
 
 # admin.site.site_header = "⚡ Mantech HRMS Administration"
 # admin.site.site_title = "Mantech HRMS"

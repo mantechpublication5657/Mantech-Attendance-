@@ -1,4 +1,5 @@
 from .models import AdminNotification
+from accounts.permissions import is_admin
 
 
 def admin_notifications(request):
@@ -8,6 +9,6 @@ def admin_notifications(request):
     to TEMPLATES[0]['OPTIONS']['context_processors'] in settings.py
     """
     unseen_count = 0
-    if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+    if is_admin(request.user):
         unseen_count = AdminNotification.objects.filter(is_seen=False).count()
     return {'admin_unseen_notifications': unseen_count}

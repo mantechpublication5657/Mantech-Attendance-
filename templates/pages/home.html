@@ -1268,7 +1268,7 @@
                             </div>
 
                         </a>
-                        {% if request.user.is_superuser %}
+                        {% if request.user.is_staff or request.user.is_superuser %}
                         <a href="{% url "payroll_dashboard" request.user.id %}"
                            class="quick-btn">
 
@@ -1293,7 +1293,7 @@
                         </a>
 
                         <!-- Leave Approval (Admin Only) -->
-                        {% if request.user.is_superuser %}
+                        {% if request.user.is_staff or request.user.is_superuser %}
                         <a href="{% url "leave_employee_list" %}"
                            class="quick-btn">
 

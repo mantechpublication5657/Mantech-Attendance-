@@ -1,15 +1,15 @@
 from django.utils import timezone
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from employees.models import EmployeeProfile
 from attendance.models import Attendance
 from datetime import datetime, timedelta
 import calendar
-from django.contrib.auth.decorators import login_required
 from noticeboard.models import NoticeBoard
 from grievances.models import AdminNotification
 from accounts.models import User
+from accounts.permissions import is_admin
 
 @login_required
 def home_dashboard(request):
@@ -303,6 +303,8 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+@login_required
+@user_passes_test(is_admin)
 def attendance_today_list(request):
 
     # --- Date filter ---

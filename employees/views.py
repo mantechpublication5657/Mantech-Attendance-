@@ -7,6 +7,9 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from decimal import Decimal
 from django.conf import settings
+from django.utils import timezone
+from django.utils.crypto import get_random_string
+from django.core.mail import send_mail
 
 from .forms import (
     EmployeeBasicInfoForm,
@@ -660,8 +663,7 @@ def payroll_report_download(request):
     return HttpResponse("Invalid format", status=400)
 
 # Utility: check if user is admin/staff
-def is_admin(user):
-    return user.is_staff or user.is_superuser
+from accounts.permissions import is_admin, owner_or_admin_required
 
 
 # --------------------------------------------------
@@ -701,8 +703,33 @@ def add_employee(request):
                 role=form.cleaned_data.get("role"),
             )
 
-            messages.success(request, "Employee added successfully.")
-            return redirect("employee_list")
+            # Send an email-verification OTP to the new employee
+            otp = get_random_string(length=6, allowed_chars='0123456789')
+            user.email_otp = otp
+            user.otp_last_sent = timezone.now()
+            user.is_email_verified = False
+            user.save()
+
+            subject = "MP HRMS-Email Verification"
+            message = (
+                f"Hello {user.username.capitalize()},\n\n"
+                f"Thank you for registering with Mantech Publication.\n\n"
+                f"To complete your email verification, please use the One-Time Password (OTP) below:\n\n"
+                f"Your OTP Code: {otp}\n\n"
+                f"This code will expire in 5 minutes. Please do not share it with anyone.\n\n"
+                f"Best regards,\n"
+                f"Mantech Publication Team"
+            )
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+
+            messages.success(request, f"Employee added successfully. An OTP has been sent to {user.email} for email verification.")
+            return redirect("verify_otp", user_id=user.id)
     else:
         form = AddEmployeeForm()
     return render(request, "employees/add_employee.html", {"form": form})
@@ -762,6 +789,7 @@ def edit_employee_basic(request):
 from datetime import date
 import calendar
 @login_required
+@owner_or_admin_required
 def employee_detail(request, user_id):
     user = get_object_or_404(User, id=user_id)
     profile, created = EmployeeProfile.objects.get_or_create(user=user)
@@ -985,6 +1013,7 @@ from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas as pdf_canvas
 
 @login_required
+@owner_or_admin_required
 def download_id_card(request, user_id):
     user    = get_object_or_404(User, id=user_id)
     profile = get_object_or_404(EmployeeProfile, user=user)
@@ -1293,6 +1322,7 @@ def _justified_paragraph(c, text, x, y, max_w, size=8.2, leading=5.2*mm):
 # ─────────────────────────────────────────────────────────────
 
 @login_required
+@owner_or_admin_required
 def download_experience_letter(request, user_id):
     user    = get_object_or_404(User, id=user_id)
     profile = get_object_or_404(EmployeeProfile, user=user)

@@ -154,7 +154,7 @@ body {
             Enter the OTP sent to your email
         </div>
 
-        {% if not request.user.is_verified %}
+        {% if not request.user.is_email_verified %}
         <div class="verify-alert">
             Your email is not verified yet.
         </div>

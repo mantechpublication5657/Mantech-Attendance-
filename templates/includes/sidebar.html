@@ -122,25 +122,20 @@
 
                     {% if request.user.is_staff or request.user.is_superuser %}
 
-                        {% if request.user.is_superuser %}
+                        <a href="{% url 'payroll_dashboard' request.user.id %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'payroll_dashboard' %}active{% endif %}">
+                            <i class="bi bi-cash-stack"></i> Payroll
+                        </a>
 
-                            <a href="{% url 'payroll_dashboard' request.user.id %}"
-                            class="nav-item {% if request.resolver_match.url_name == 'payroll_dashboard' %}active{% endif %}">
-                                <i class="bi bi-cash-stack"></i> Payroll
-                            </a>
+                        <a href="{% url 'leave_employee_list' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'leave_employee_list' %}active{% endif %}">
+                            <i class="bi bi-airplane-fill"></i> Leave
+                        </a>
 
-                            <a href="{% url 'leave_employee_list' %}"
-                            class="nav-item {% if request.resolver_match.url_name == 'leave_employee_list' %}active{% endif %}">
-                                <i class="bi bi-airplane-fill"></i> Leave
-                            </a>
-
-                            <a href="{% url 'add_holiday' %}"
-                            class="nav-item {% if request.resolver_match.url_name == 'add_holiday' %}active{% endif %}">
-                                <i class="bi bi-calendar-plus"></i> Add Holiday
-                            </a>
-
-                        {% endif %}
-                            
+                        <a href="{% url 'add_holiday' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'add_holiday' %}active{% endif %}">
+                            <i class="bi bi-calendar-plus"></i> Add Holiday
+                        </a>
 
                         <a href="{% url 'missing_attendance_employees' %}"
                         class="nav-item {% if request.resolver_match.url_name == 'missing_attendance_employees' %}active{% endif %}">
@@ -165,7 +160,6 @@
             
             <div class="nav-section-label">System</div>
             {% if not request.user.is_authenticated %}
-            <a href="{% url "signup" %}" class="nav-item"><i class="bi bi-person-plus"></i> Signup</a>
             <a href="{% url "login" %}" class="nav-item"><i class="bi bi-person-circle"></i> Login</a>
             {% else %}
             
@@ -206,7 +200,7 @@
                 </div>
                 <div class="user-info">
                     <strong style="text-transform: capitalize;">{{ request.user.username|default:"Admin User" }}</strong>
-                    <span style = "text-transform: capitalize;">{{request.user.role|default:"User"}}</span>
+                    <span style = "text-transform: capitalize;">{{ request.user.employee_profile.admin_data.role|default:"Employee" }}</span>
                 </div>
                 <i class="bi bi-three-dots-vertical"></i>
             </div>

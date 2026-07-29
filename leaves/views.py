@@ -2,9 +2,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 
-from payroll.views import User, is_admin
+from payroll.views import User
+from accounts.permissions import is_admin
 
-from employees.views import is_admin
 from attendance.models import Attendance
 from employees.models import EmployeeProfile
 from django.contrib.auth.decorators import user_passes_test
@@ -99,6 +99,7 @@ def leave_employee_list(request):
     )
 
 @login_required
+@user_passes_test(is_admin)
 def convert_absent_to_leave(request, user_id):
 
     employee = get_object_or_404(
@@ -158,9 +159,6 @@ from django.utils import timezone
 from employees.models import EmployeeProfile
 from attendance.models import Attendance
 import calendar
-
-def is_admin(user):
-    return user.is_superuser or user.groups.filter(name="Admin").exists() or user.is_staff
 
 
 @user_passes_test(is_admin)
@@ -460,10 +458,6 @@ from attendance.models import  Attendance
 from leaves.models import Holiday
 
 User = get_user_model()
-
-
-def is_admin(user):
-    return user.is_staff or user.is_superuser
 
 
 @login_required
