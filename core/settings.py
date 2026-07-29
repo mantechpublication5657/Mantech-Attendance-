@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 from django.contrib.messages import constants as messages
-
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,33 +23,36 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-tnpg7zk*c5!9*p0-2jemqyj+o9!jgh-l%zd^s2h%an!knu4vci'
+# Falls back to the old hardcoded dev key only when SECRET_KEY isn't set in
+# the environment, so local dev keeps working without a .env file.
+SECRET_KEY = config(
+    'SECRET_KEY',
+    default='django-insecure-tnpg7zk*c5!9*p0-2jemqyj+o9!jgh-l%zd^s2h%an!knu4vci',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = [
-    '*',
-    '192.168.1.7',
-    '127.0.0.1',
-    'localhost',
-]
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    default='*,192.168.1.7,127.0.0.1,localhost',
+    cast=Csv(),
+)
 
 # When accessing the dev server by IP from other devices, include
 # those origins so Django's CSRF check accepts POSTs from them.
-CSRF_TRUSTED_ORIGINS = [
-    "http://127.0.0.1",
-    "http://127.0.0.1:8000",
-    "http://192.168.1.7",
-    "http://192.168.1.7:8000",
-]
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://127.0.0.1,http://127.0.0.1:8000,http://192.168.1.7,http://192.168.1.7:8000',
+    cast=Csv(),
+)
 
-# Development CSRF settings
-CSRF_COOKIE_SECURE = False  # Allow cookies over HTTP in development
-CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read CSRF token in development
+# Secure by default in production (DEBUG=False); relaxed locally over HTTP.
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read CSRF token
 CSRF_COOKIE_SAMESITE = 'Lax'  # Allow form submissions from same site
 
-# Disable the Cross-Origin-Opener-Policy header in development when using HTTP/local IP.
+# Disable the Cross-Origin-Opener-Policy header when using HTTP/local IP.
 # This avoids browser warnings for non-HTTPS local network access.
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
@@ -65,7 +68,11 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+
+    # Cloud media storage (cloudinary_storage must come before staticfiles)
+    'cloudinary_storage',
     'django.contrib.staticfiles',
+    'cloudinary',
 
     # CUSTOM APPS
     'accounts',
@@ -133,6 +140,15 @@ DATABASES = {
         }
     }
 }
+
+# On Vercel (or any host that sets DATABASE_URL), use Postgres instead of the
+# local SQLite file above — SQLite's on-disk file doesn't survive a
+# serverless/ephemeral filesystem. Local dev is untouched when this env var
+# isn't set.
+_DATABASE_URL = config('DATABASE_URL', default='')
+if _DATABASE_URL:
+    import dj_database_url
+    DATABASES['default'] = dj_database_url.config(default=_DATABASE_URL, conn_max_age=60)
 
 
 # Password validation
@@ -206,15 +222,42 @@ STATICFILES_DIRS = [
 # Static files (WhiteNoise)
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Cloudinary env vars (used below and for CLOUDINARY_STORAGE further down).
+# Media uploads (profile pictures) only move to Cloudinary once these are
+# actually configured — otherwise local dev keeps using the local disk it's
+# already using, so nothing breaks before the user sets up an account.
+CLOUDINARY_CLOUD_NAME = config('CLOUDINARY_CLOUD_NAME', default='')
+CLOUDINARY_API_KEY = config('CLOUDINARY_API_KEY', default='')
+CLOUDINARY_API_SECRET = config('CLOUDINARY_API_SECRET', default='')
+
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": (
+            "cloudinary_storage.storage.MediaCloudinaryStorage"
+            if CLOUDINARY_CLOUD_NAME
+            else "django.core.files.storage.FileSystemStorage"
+        ),
     },
 
+    # WhiteNoise's compressed/manifest backend needs `collectstatic` to have
+    # run (it looks up a staticfiles.json manifest) — only switch to it when
+    # DEBUG is off, so `manage.py runserver` locally isn't affected.
     "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        "BACKEND": (
+            "whitenoise.storage.CompressedManifestStaticFilesStorage"
+            if not DEBUG
+            else "django.contrib.staticfiles.storage.StaticFilesStorage"
+        ),
     },
 }
+
+if CLOUDINARY_CLOUD_NAME:
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
+        'API_KEY': CLOUDINARY_API_KEY,
+        'API_SECRET': CLOUDINARY_API_SECRET,
+    }
 
 from django.conf import settings
 
@@ -241,17 +284,18 @@ MESSAGE_TAGS = {
     messages.INFO: "info",
 }
 
-# For development, use console email backend (prints to console instead of sending)
-# To send real emails later, change to SMTP backend and configure Gmail App Password
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_HOST = "smtp.gmail.com"
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_USE_SSL = False
-# EMAIL_HOST_USER = "mantechadmin@gmail.com"
-# EMAIL_HOST_PASSWORD = "your-app-password-here"
-DEFAULT_USER_EMAIL = "mantechadmin@gmail.com"
+# Defaults to the console backend (prints instead of sending) for local dev.
+# Set EMAIL_BACKEND/EMAIL_HOST_USER/EMAIL_HOST_PASSWORD in the environment
+# (e.g. on Vercel) to send real emails via Gmail SMTP.
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or 'noreply@mantechpublications.com'
+DEFAULT_USER_EMAIL = EMAIL_HOST_USER or "mantechadmin@gmail.com"
 
 
 # HR_EMAIL : hr.mantechpublications@gmail.com
