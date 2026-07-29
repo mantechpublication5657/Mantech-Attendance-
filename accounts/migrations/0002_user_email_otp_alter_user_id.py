@@ -34,7 +34,7 @@ def alter_user_id_to_uuid(apps, schema_editor):
                     WHERE confrelid = 'accounts_user'::regclass
                       AND contype = 'f'
                 LOOP
-                    EXECUTE format('ALTER TABLE %s DROP CONSTRAINT %I', r.table_name, r.conname);
+                    EXECUTE format('ALTER TABLE %%s DROP CONSTRAINT %%I', r.table_name, r.conname);
                 END LOOP;
             END $$;
         """)
