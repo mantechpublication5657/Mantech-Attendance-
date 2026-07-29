@@ -68,11 +68,15 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-
-    # Cloud media storage (cloudinary_storage must come before staticfiles)
-    'cloudinary_storage',
     'django.contrib.staticfiles',
-    'cloudinary',
+
+    # NOTE: 'cloudinary_storage'/'cloudinary' are intentionally NOT registered
+    # here. Their storage classes (used below in STORAGES) work fine as plain
+    # importable classes without app registration, and registering
+    # 'cloudinary_storage' makes Django use ITS collectstatic override, which
+    # silently skips copying most static files unless STATICFILES_STORAGE is
+    # its own Cloudinary-static backend (which we don't use - only Cloudinary
+    # for media, not static). That bug broke `collectstatic` on Vercel/Render.
 
     # CUSTOM APPS
     'accounts',
@@ -258,6 +262,14 @@ if CLOUDINARY_CLOUD_NAME:
         'API_KEY': CLOUDINARY_API_KEY,
         'API_SECRET': CLOUDINARY_API_SECRET,
     }
+
+# django-cloudinary-storage's custom `collectstatic` command still reads the
+# old pre-4.2 STATICFILES_STORAGE/DEFAULT_FILE_STORAGE settings directly
+# instead of STORAGES, and crashes with AttributeError if they're undefined.
+# Django supports defining both as long as they're kept consistent with
+# STORAGES, so mirror them here purely for that package's compatibility.
+STATICFILES_STORAGE = STORAGES["staticfiles"]["BACKEND"]
+DEFAULT_FILE_STORAGE = STORAGES["default"]["BACKEND"]
 
 from django.conf import settings
 
