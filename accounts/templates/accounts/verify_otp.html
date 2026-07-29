@@ -1,0 +1,265 @@
+{% extends "layouts/main_layout.html" %}
+{% block title %}Verify OTP{% endblock %}
+
+{% block page_content %}
+
+<style>
+body {
+    background: linear-gradient(135deg, #0f172a, #1e3a8a);
+    font-family: 'Poppins', sans-serif;
+}
+
+.otp-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.otp-card {
+    width: 100%;
+    max-width: 380px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+    animation: fadeInUp 0.5s ease;
+}
+
+.otp-card:hover {
+    transform: translateY(-3px);
+    transition: 0.3s ease;
+}
+
+.icon {
+    text-align: center;
+    font-size: 42px;
+    color: #2563eb;
+    margin-bottom: 10px;
+}
+
+.title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #6b7280;
+    font-size: 13px;
+    margin-bottom: 18px;
+}
+
+.verify-alert {
+    background: #fef2f2;
+    color: #dc2626;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 13px;
+    margin-bottom: 18px;
+    font-weight: 500;
+}
+
+.form-control {
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    font-size: 17px;
+    letter-spacing: 2px;
+    border: 1px solid #d1d5db;
+    transition: 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 8px rgba(37,99,235,0.25);
+}
+
+.btn-verify {
+    width: 100%;
+    background: linear-gradient(90deg, #2563eb, #1d4ed8);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    font-weight: 600;
+    transition: 0.3s ease;
+}
+
+.btn-verify:hover {
+    background: linear-gradient(90deg, #1d4ed8, #1e40af);
+    transform: translateY(-2px);
+}
+
+.resend-link {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 13px;
+}
+
+.resend-link a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.resend-link a:hover {
+    text-decoration: underline;
+}
+
+.resend-link a.disabled {
+    pointer-events: none;
+    color: #9ca3af;
+    cursor: not-allowed;
+    text-decoration: none;
+}
+
+.timer-text {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #ef4444;
+    font-weight: 500;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
+<div class="otp-wrapper">
+
+    <div class="otp-card">
+
+        <div class="icon">
+            <i class="bi bi-shield-lock-fill"></i>
+        </div>
+
+        <div class="title">
+            OTP Verification
+        </div>
+
+        <div class="subtitle">
+            Enter the OTP sent to your email
+        </div>
+
+        {% if not request.user.is_verified %}
+        <div class="verify-alert">
+            Your email is not verified yet.
+        </div>
+        {% endif %}
+
+        <!-- OTP Verify Form -->
+        <form method="POST">
+            {% csrf_token %}
+
+            <input type="text"
+                   name="otp"
+                   class="form-control mb-3"
+                   placeholder="Enter OTP"
+                   required>
+
+            <button type="submit" class="btn btn-verify">
+                Verify OTP
+            </button>
+        </form>
+
+        <!-- Resend OTP -->
+        <div class="resend-link">
+
+            Didn’t receive the code?
+
+            <a href="javascript:void(0)"
+               id="resendLink"
+               onclick="sendOTP()">
+               Send OTP
+            </a>
+
+            <div id="timerText" class="timer-text"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+let timeLeft = {{ remaining_seconds|default:0 }};
+
+const resendLink = document.getElementById("resendLink");
+const timerText = document.getElementById("timerText");
+
+function startCountdown(seconds) {
+
+    timeLeft = seconds;
+
+    resendLink.classList.add("disabled");
+
+    const countdown = setInterval(() => {
+
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+
+        if (seconds < 10) {
+            seconds = "0" + seconds;
+        }
+
+        timerText.innerHTML =
+            `Resend OTP in ${minutes}:${seconds}`;
+
+        timeLeft--;
+
+        if (timeLeft < 0) {
+
+            clearInterval(countdown);
+
+            resendLink.classList.remove("disabled");
+
+            resendLink.innerHTML = "Resend OTP";
+
+            timerText.innerHTML = "";
+        }
+
+    }, 1000);
+}
+
+// Auto start timer after refresh
+if (timeLeft > 0) {
+
+    resendLink.classList.add("disabled");
+
+    resendLink.innerHTML = "OTP Sent";
+
+    startCountdown(timeLeft);
+}
+
+function sendOTP() {
+
+    if (resendLink.classList.contains("disabled")) {
+        return;
+    }
+
+    resendLink.classList.add("disabled");
+    resendLink.innerHTML = "OTP Sent";
+
+    startCountdown(300);
+
+    window.location.href =
+        "{% url 'resend_otp' user_id=user_id %}";
+}
+
+</script>
+
+{% endblock %}

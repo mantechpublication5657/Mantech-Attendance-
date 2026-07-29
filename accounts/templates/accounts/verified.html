@@ -1,0 +1,352 @@
+{% extends "layouts/main_layout.html" %}
+
+{% block title %}Email Verified{% endblock %}
+
+{% block page_content %}
+
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap');
+
+body {
+    background: linear-gradient(135deg, #0f172a, #1e3a8a);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* CENTER WRAPPER */
+.verify-wrapper {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* CARD */
+.verify-card {
+    width: 100%;
+    max-width: 460px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 48px 40px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255,255,255,0.05);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    animation: cardIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* SUBTLE TOP ACCENT */
+.verify-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #16a34a, #22c55e, #4ade80);
+    border-radius: 20px 20px 0 0;
+}
+
+/* GLOW BEHIND ICON */
+.icon-glow {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 28px;
+    position: relative;
+    animation: iconIn 0.7s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes iconIn {
+    from { opacity: 0; transform: scale(0.4) rotate(-15deg); }
+    to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+.icon-glow::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(34,197,94,0.2) 0%, rgba(34,197,94,0) 70%);
+    animation: pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%       { transform: scale(1.15); opacity: 0.6; }
+}
+
+.icon-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    border: 3px solid #86efac;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+.icon-circle i {
+    font-size: 46px;
+    color: #16a34a;
+}
+
+/* CHECKMARK BADGE */
+.check-badge {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #16a34a;
+    border: 2.5px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    animation: badgeIn 0.4s 0.6s ease both;
+}
+
+@keyframes badgeIn {
+    from { opacity: 0; transform: scale(0); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.check-badge i {
+    font-size: 13px;
+    color: #fff;
+}
+
+/* BRAND */
+.brand-tag {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #16a34a;
+    margin-bottom: 12px;
+    animation: fadeUp 0.5s 0.35s ease both;
+}
+
+/* HEADLINE */
+.verify-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 10px;
+    line-height: 1.2;
+    animation: fadeUp 0.5s 0.4s ease both;
+}
+
+/* SUBTEXT */
+.verify-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.65;
+    margin-bottom: 32px;
+    animation: fadeUp 0.5s 0.45s ease both;
+}
+
+.verify-subtitle span {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* DIVIDER */
+.divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+    margin: 0 0 28px;
+    animation: fadeUp 0.5s 0.5s ease both;
+}
+
+/* STATUS PILLS */
+.status-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 32px;
+    animation: fadeUp 0.5s 0.52s ease both;
+}
+
+.status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pill-green {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.pill-blue {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.status-pill i { font-size: 11px; }
+
+/* CTA BUTTON */
+.btn-verify {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: #fff;
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 20px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(22,163,74,0.35);
+    animation: fadeUp 0.5s 0.55s ease both;
+    margin-bottom: 14px;
+}
+
+.btn-verify:hover {
+    background: linear-gradient(135deg, #15803d, #166534);
+    box-shadow: 0 6px 20px rgba(22,163,74,0.45);
+    transform: translateY(-1px);
+    color: #fff;
+    text-decoration: none;
+}
+
+.btn-verify:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(22,163,74,0.3);
+}
+
+/* SECONDARY LINK */
+.secondary-link {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: #94a3b8;
+    animation: fadeUp 0.5s 0.6s ease both;
+}
+
+.secondary-link a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.secondary-link a:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+/* FOOTER NOTE */
+.footer-note {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px dashed #e2e8f0;
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    color: #cbd5e1;
+    animation: fadeUp 0.5s 0.65s ease both;
+}
+
+/* RESPONSIVE */
+@media (max-width: 480px) {
+    .verify-card {
+        padding: 36px 24px;
+    }
+    .verify-title {
+        font-size: 22px;
+    }
+    .icon-glow, .icon-circle {
+        width: 88px;
+        height: 88px;
+    }
+    .icon-circle i {
+        font-size: 40px;
+    }
+}
+
+</style>
+
+<div class="verify-wrapper">
+    <div class="verify-card">
+
+        <!-- Icon -->
+        <div class="icon-glow">
+            <div class="icon-circle">
+                <i class="bi bi-envelope-check-fill"></i>
+            </div>
+            <div class="check-badge">
+                <i class="bi bi-check-lg"></i>
+            </div>
+        </div>
+
+        <!-- Brand tag -->
+        <div class="brand-tag">Mantech HRMS</div>
+
+        <!-- Title -->
+        <div class="verify-title">Email Verified!</div>
+
+        <!-- Subtitle -->
+        <div class="verify-subtitle">
+            Your email address has been successfully verified.<br>
+            Welcome aboard, <span>Employee</span>. Your account is now fully active and ready to use.
+        </div>
+
+        <!-- Status pills -->
+        <div class="status-row">
+            <div class="status-pill pill-green">
+                <i class="bi bi-shield-check"></i> Account Active
+            </div>
+            <div class="status-pill pill-blue">
+                <i class="bi bi-clock-history"></i> Just now
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="divider"></div>
+
+        <!-- CTA -->
+        <a href="{% url "login" %}" class="btn-verify">
+            <i class="bi bi-box-arrow-in-right"></i>
+            Continue to Login
+        </a>
+
+        <!-- Secondary -->
+        <div class="secondary-link">
+            Need help? <span style = "color: #2563eb; font-weight: 500;">Contact to your Admin</span>
+        </div>
+
+        <!-- Footer note -->
+        <div class="footer-note">
+            A confirmation has been sent to your registered email address.
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

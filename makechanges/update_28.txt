@@ -1,0 +1,301 @@
+# ADD CUSTOM HOLIDAY FEATUES FOR ADMIN 
+File Updated...
+
+
+# LEAVE MODELS
+add_holiday.html 
+views.py
+urls.py
+models.py
+admin.py
+
+# DASHBOARD MODEL 
+# templatetags/attendace_tag.py paste complete file 
+# views.py update litle bit 
+# home.html update litle bit
+# attendace_dashboard.html  
+# view.py litle bit 
+# pdf_report.py file little bit updated
+ 
+
+# IN THE pdf_report.py
+
+# Change from:
+chip = Table(
+    [[
+        Paragraph(
+            a.status,
+            ParagraphStyle(
+                "chip",
+                fontName="Helvetica-Bold",
+                fontSize=8,
+                alignment=TA_CENTER,
+                textColor=status_fg,
+            )
+        )
+    ]],
+    colWidths=[20 * mm],
+)
+
+# Change to:
+chip_label = (
+    a.remarks
+    if a.status == "Leave" and a.remarks
+    else a.status
+)
+
+chip = Table(
+    [[
+        Paragraph(
+            chip_label,
+            ParagraphStyle(
+                "chip",
+                fontName="Helvetica-Bold",
+                fontSize=8,
+                alignment=TA_CENTER,
+                textColor=status_fg,
+            )
+        )
+    ]],
+    colWidths=[20 * mm],
+)
+
+
+# Change from:
+colWidths=[20 * mm],
+
+# Change to:
+colWidths=[35 * mm],
+
+# Change from:
+colWidths=[
+    40 * mm,
+    35 * mm,
+    35 * mm,
+    35 * mm,
+    30 * mm,
+],
+
+# Change to:
+colWidths=[
+    35 * mm,
+    30 * mm,
+    30 * mm,
+    30 * mm,
+    50 * mm,   # ← wider for remarks text
+],
+
+
+# DASHBOARD AND ATTENDANCE 
+
+# Add this alongside your existing present_days, absent_days etc.
+leave_remarks = {}
+for a in attendance_queryset:
+    if a.status == 'Leave' and a.remarks:
+        leave_remarks[a.date.day] = a.remarks
+        
+context = {
+    # ... your existing context
+    'leave_remarks': leave_remarks,
+}
+
+
+#Home and attendance html page 
+
+{% for week in month_days %}
+  {% for day in week %}
+
+    {% if day == 0 %}
+
+      <div class="calendar-day empty"></div>
+
+    {% else %}
+
+      <div class="calendar-day
+        {% if day in present_days %}present
+        {% elif day in absent_days %}absent
+        {% elif day in late_days %}late
+        {% elif day in leave_days %}leave
+        {% elif day in half_day_days %}half-day
+        {% endif %}
+        {% if day == today.day %}today-highlight{% endif %}
+      ">
+        <div class="day-number">{{ day }}</div>
+
+        {% if day in leave_days %}
+        <div class="day-remark" data-remark="{% if leave_remarks|get_item:day %}{{ leave_remarks|get_item:day }}{% else %}Leave{% endif %}">
+            {% if leave_remarks|get_item:day %}
+            {{ leave_remarks|get_item:day }}
+            {% else %}
+            Leave
+            {% endif %}
+        </div>
+        {% endif %}
+
+      </div>
+
+    {% endif %}
+
+  {% endfor %}
+{% endfor %}
+
+
+# attendace_tag.py in attendace
+from django import template
+register = template.Library()
+
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)
+
+
+
+#CSS 
+
+.day-remark {
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    right: 0;
+    font-size: 9px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 4px;
+    opacity: 0.85;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.day-remark{
+    overflow: visible;
+    white-space: normal;
+    z-index: 999;
+    background: #1e293b;
+    color: #fff !important;
+    padding: 4px 8px;
+    border-radius: 6px;
+    width: max-content;
+    max-width: 180px;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -5px;
+    opacity: 1;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    text-align: center;
+    line-height: 1.4;
+}
+
+Make sure you have {% load attendance_tags %} at the top of your template.
+
+# for admin add 
+from django.contrib import admin
+from .models import Holiday
+
+@admin.register(Holiday)
+class HolidayAdmin(admin.ModelAdmin):
+    list_display = ('date', 'holiday_type', 'custom_type', 'remarks', 'created_by', 'created_at')
+    list_filter = ('holiday_type',)
+    search_fields = ('remarks', 'custom_type')
+    ordering = ('-date',)
+    readonly_fields = ('created_by', 'created_at')
+
+
+
+# add button in sidebar
+<a href="{% url 'add_holiday' %}" class="nav-item">
+    <i class="bi bi-calendar-plus"></i> Add Holiday
+</a>
+
+# add attendance tags in home and attendance
+{% load attendance_tags %} 
+
+
+#notice dashboard 
+.notice-grid{
+        display:grid;
+        {% if request.user.is_staff %}
+            grid-template-columns:340px 1fr;
+        {% else %}
+            grid-template-columns:auto 1fr;
+        {% endif %}
+        gap:20px;
+    }
+
+sidebar.html changes 
+home.html changes 
+
+
+
+
+#TOP PROGRESSING BAR (base.html)
+
+<!-- In <head> -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css"/>
+
+<!-- Before </body> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+<script>
+  NProgress.configure({ showSpinner: false, speed: 400, trickleSpeed: 200 });
+
+  // Start bar on every link click and form submit
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('a[href]');
+    if (link && !link.target && !link.href.startsWith('#') && !link.href.startsWith('javascript')) {
+      NProgress.start();
+    }
+  });
+
+  document.addEventListener('submit', function() {
+    NProgress.start();
+  });
+
+  // Finish when page fully loads
+  window.addEventListener('load', function() {
+    NProgress.done();
+  });
+</script>
+
+
+
+# solve issue for images profile here 
+
+#settings.py file 
+
+# add in the templates 
+'django.template.context_processors.media',  # ← add this for media files
+
+# FOR MEDIA FILES
+MEDIA_URL  = '/media/'
+BASE_DIR = Path(__file__).resolve().parent.parent
+MEDIA_ROOT = BASE_DIR / 'media' 
+
+
+
+# changes on 1 june
+
+# payrolls
+# dashboard.html,dashboard.views,forms.py
+
+# leave (dashbaord.html,views.py) for search values 
+
+# mark_missing_attendance (views file html file )
+# attendance_tags updated 
+
+
+# on the date 2 changes the profile in main urls 
+
+from django.views.static import serve
+from django.urls import re_path
+from django.conf import settings
+
+urlpatterns += [
+    re_path(
+        r'^media/(?P<path>.*)$',
+        serve,
+        {'document_root': settings.MEDIA_ROOT},
+    ),
+]
+
+# solve add pay roll for taking the month and year 

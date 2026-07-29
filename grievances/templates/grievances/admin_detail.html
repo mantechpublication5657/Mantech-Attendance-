@@ -1,0 +1,133 @@
+{% extends 'layouts/main_layout.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} — Mantech HRMS{% endblock %}
+
+{% block extra_css %}
+<style>
+  .detail-wrap { max-width: 800px; margin: 0 auto; }
+
+  .grievance-card { border-radius:14px; border:1.5px solid #e0e0e0; background:#fff; margin-bottom:1.5rem; overflow:hidden; }
+  .grievance-card-header { background:linear-gradient(135deg,#1b5e20,#388e3c); color:#fff; padding:1.5rem 2rem; }
+  .grievance-card-header h4 { margin:0; font-weight:700; }
+
+  .info-row { display:flex; gap:2rem; flex-wrap:wrap; padding:1.25rem 2rem; border-bottom:1px solid #f0f0f0; }
+  .info-item label { font-size:.78rem; color:#90a4ae; text-transform:uppercase; letter-spacing:.06em; font-weight:700; display:block; margin-bottom:.2rem; }
+  .info-item span { font-weight:600; color:#37474f; }
+
+  .message-body { padding:1.5rem 2rem; white-space:pre-wrap; color:#37474f; line-height:1.7; }
+
+  .reply-bubble { border-radius:12px; padding:1rem 1.25rem; margin-bottom:1rem; }
+  .reply-admin  { background:#e8f5e9; border-left:4px solid #2e7d32; }
+  .reply-label  { font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
+  .reply-label.admin { color:#2e7d32; }
+
+  .reply-form-card { border-radius:14px; border:1.5px solid #c8e6c9; background:#f9fbe7; padding:1.5rem 2rem; }
+  .reply-form-card h5 { font-weight:700; color:#1b5e20; }
+
+  .status-select { border-radius:8px; border:1.5px solid #cfd8dc; padding:.5rem .75rem; }
+
+  .badge-pending   { background:#fff3e0; color:#e65100; }
+  .badge-reviewed  { background:#e3f2fd; color:#1565c0; }
+  .badge-resolved  { background:#e8f5e9; color:#2e7d32; }
+  .badge-rejected  { background:#fce4ec; color:#b71c1c; }
+
+  .email-tag { background:#e3f2fd; color:#1565c0; border-radius:20px; padding:.2rem .75rem; font-size:.8rem; font-weight:600; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="container py-4">
+<div class="detail-wrap">
+
+  <a href="{% url 'admin_notifications' %}" class="btn btn-sm btn-outline-secondary mb-3" style="border-radius:8px;">
+    <i class="fas fa-arrow-left me-1"></i> Back to Notifications
+  </a>
+
+  <!-- Grievance Detail -->
+  <div class="grievance-card">
+    <div class="grievance-card-header d-flex justify-content-between align-items-start flex-wrap gap-2">
+      <div>
+        <h4>{{ grievance.subject }}</h4>
+        <small style="opacity:.8;">Application #{{ grievance.id }} · {{ grievance.get_category_display }}</small>
+      </div>
+      <span class="badge rounded-pill badge-{{ grievance.status }} px-3 py-2">{{ grievance.get_status_display }}</span>
+    </div>
+
+    <div class="info-row">
+      <div class="info-item">
+        <label>Employee</label>
+        <span>{{ grievance.employee.get_full_name|default:grievance.employee.username }}</span>
+      </div>
+      <div class="info-item">
+        <label>Email</label>
+        <span class="email-tag"><i class="fas fa-envelope me-1"></i>{{ grievance.employee.email|default:"Not set" }}</span>
+      </div>
+      <div class="info-item">
+        <label>Submitted</label>
+        <span>{{ grievance.created_at|date:"M d, Y H:i" }}</span>
+      </div>
+      <div class="info-item">
+        <label>Last Updated</label>
+        <span>{{ grievance.updated_at|date:"M d, Y H:i" }}</span>
+      </div>
+    </div>
+
+    <div class="message-body">{{ grievance.message }}</div>
+  </div>
+
+  <!-- Existing Replies -->
+  {% if replies %}
+  <h6 class="fw-bold text-muted mb-3"><i class="fas fa-comments me-1"></i> Conversation History</h6>
+  {% for reply in replies %}
+  <div class="reply-bubble reply-admin">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+      <span class="reply-label admin"><i class="fas fa-shield-alt me-1"></i>{{ reply.replied_by.get_full_name|default:reply.replied_by.username }} (Admin)</span>
+      <small class="text-muted">{{ reply.created_at|date:"M d, Y H:i" }}</small>
+    </div>
+    <p class="mb-1" style="white-space:pre-wrap;">{{ reply.message }}</p>
+    {% if reply.email_sent %}
+      <span class="badge bg-success" style="font-size:.72rem;"><i class="fas fa-paper-plane me-1"></i>Email Sent to {{ grievance.employee.email }}</span>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <!-- Reply Form -->
+  <div class="reply-form-card mt-3">
+    <h5><i class="fas fa-reply me-2"></i>Send Reply via Email</h5>
+    <p class="text-muted small mb-3">
+      Your reply will be emailed to
+      <strong>{{ grievance.employee.email|default:"(no email set)" }}</strong>
+      from your host email <strong>{{ request.user.email }}</strong>.
+      The employee will also see a notification in their portal.
+    </p>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="mb-3">
+        {{ reply_form.message.label_tag }}
+        {{ reply_form.message }}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-600">Update Application Status</label>
+        <select name="status" class="form-select status-select" style="max-width:250px;">
+          <option value="">— Keep current status —</option>
+          <option value="reviewed" {% if grievance.status == 'reviewed' %}selected{% endif %}>Reviewed</option>
+          <option value="resolved" {% if grievance.status == 'resolved' %}selected{% endif %}>Resolved</option>
+          <option value="rejected" {% if grievance.status == 'rejected' %}selected{% endif %}>Rejected</option>
+          <option value="pending"  {% if grievance.status == 'pending'  %}selected{% endif %}>Pending</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn" style="background:linear-gradient(135deg,#1b5e20,#388e3c);color:#fff;border-radius:8px;padding:.65rem 2rem;font-weight:600;border:none;">
+        <i class="fas fa-paper-plane me-1"></i> Send Reply & Email
+      </button>
+    </form>
+  </div>
+
+</div>
+</div>
+{% endblock %}

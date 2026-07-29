@@ -1,0 +1,216 @@
+{% extends 'layouts/main_layout.html' %}
+{% block title %}Employee List{% endblock title %}
+{% load static %}
+
+{% block page_content %}
+
+<!-- For Font Awesome 6 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<div class="container-fluid employee-list-wrapper">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-3">
+
+        <div>
+            <h2 class="employee-page-title">
+                Employees Profile List
+            </h2>
+
+            <p class="employee-page-subtitle">
+                Manage employees, attendance reports & records
+            </p>
+        </div>
+
+        <!-- SEARCH -->
+        <form method="GET" class="search-bar">
+
+            <div class="input-group">
+
+                <span class="input-group-text search-icon-wrap">
+
+                    <i class="fa-solid fa-search text-muted"></i>
+
+                </span>
+
+                <input type="text"
+                       name="q"
+                       value="{{ request.GET.q }}"
+                       class="form-control search-input"
+                       placeholder="Search by Username / Employee ID">
+
+                <button type="submit"
+                        class="btn search-btn">
+
+                    Search
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- TABLE CARD -->
+    <div class="card employee-card shadow-sm">
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle employee-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Employee ID</th>
+                        <th>Joining Date</th>
+                        <th>Actions</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for emp in employees %}
+
+                    <tr>
+
+                        <td>
+
+                            <div class="employee-name">
+
+                                {{ emp.user.username }}
+
+                            </div>
+
+                        </td>
+                         <td>
+                            {{ emp.user.email }}
+                        </td>
+
+
+                        <td>
+
+                            <span class="employee-id-badge">
+                                {{ emp.emp_id }}
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            {{ emp.admin_data.joining_date|date:"d M Y" }}
+
+                        </td>
+
+                       
+
+                        <!-- ACTIONS -->
+                        <td>
+
+                            <div class="mhrms-action-group">
+
+                                <!-- VIEW -->
+                                <a href="{% url 'employee_detail' emp.user.id %}"
+                                   class="mhrms-action-btn mhrms-view-btn">
+
+                                    <i class="fa-solid fa-eye"></i>
+
+                                    <span>Prof...</span>
+
+                                </a>
+
+                                <!-- EDIT -->
+                                <a href="{% url 'edit_add_employee' emp.user.id %}"
+                                   class="mhrms-action-btn mhrms-edit-btn">
+
+                                    <i class="fa-solid fa-pen"></i>
+
+                                    <span>Prof...</span>
+
+                                </a>
+                                
+                                <a href="{% url 'attendance_dashboard' emp.user.id %}"
+                                 class="mhrms-action-btn mhrms-download-btn">
+                                     <i class="fa-solid fa-eye"></i>
+                                     <span>Atte...</span>
+                                </a>
+
+                                <!-- DOWNLOAD PDF -->
+                                {% comment %} <a href="{% url 'download_attendance_pdf' emp.user.id %}?month={{ current_month }}&year={{ current_year }}"
+                                    class="mhrms-action-btn mhrms-download-btn">
+                                    <i class="fa-solid fa-download"></i>
+                                    <span class="btn-text">Attendance</span>
+                                </a> {% endcomment %}
+                                
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="6"
+                            class="text-center text-muted py-5">
+
+                            No employees found.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination-wrapper">
+
+            {% if employees.has_previous %}
+
+                <a href="?page={{ employees.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                   class="pagination-btn">
+
+                    Previous
+
+                </a>
+
+            {% endif %}
+
+            <span class="page-info">
+
+                Page {{ employees.number }} of {{ employees.paginator.num_pages }}
+
+            </span>
+
+            {% if employees.has_next %}
+
+                <a href="?page={{ employees.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                   class="pagination-btn">
+
+                    Next
+
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+<style>
+    {% load static %}
+    @import url("{% static 'employees/employee_list.css' %}");
+</style>
+{% endblock page_content %}

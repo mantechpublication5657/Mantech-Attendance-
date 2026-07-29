@@ -1,0 +1,192 @@
+{% extends 'layouts/main_layout.html' %}
+{% block title %}Leave Dashboard{% endblock title %}
+{% load static %}
+
+{% block page_content %}
+
+<!-- For Font Awesome 6 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<div class="container-fluid employee-list-wrapper">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-3">
+
+        <div>
+            <h2 class="employee-page-title">
+                Employees For Leave
+            </h2>
+
+            <p class="employee-page-subtitle">
+                Manage employees, leave 
+            </p>
+        </div>
+        <!-- SEARCH -->
+    </div>
+    
+    <!-- TABLE CARD -->
+    <div class="card employee-card shadow-sm">
+        <!-- SEARCH FILTER FORM -->
+        <div class="table-filter-wrapper">
+            {% include 'leaves/search_form.html' %}
+        </div>
+
+        <div class="table-responsive">            
+            <table class="table table-hover align-middle employee-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Employee ID</th>
+                        <th>Joining Date</th>
+                        <th>Actions</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for emp in employees %}
+
+                    <tr>
+
+                        <td>
+
+                            <div class="employee-name">
+
+                                {{ emp.user.username }}
+
+                            </div>
+
+                        </td>
+                         <td>
+                            {{ emp.user.email }}
+                        </td>
+
+
+                        <td>
+
+                            <span class="employee-id-badge">
+                                {{ emp.emp_id }}
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            {{ emp.admin_data.joining_date|date:"d M Y" }}
+
+                        </td>
+
+                       
+
+                        <!-- ACTIONS -->
+                        <td>
+
+                            <div class="mhrms-action-group">
+
+                                {% comment %} <!-- VIEW -->
+                                <a href="{% url 'employee_detail' emp.user.id %}"
+                                   class="mhrms-action-btn mhrms-view-btn">
+
+                                    <i class="fa-solid fa-eye"></i>
+
+                                    <span>View</span>
+
+                                </a> {% endcomment %}
+
+                                <!-- Provide Leave -->
+                                <a href="{% url 'convert_absent_to_leave' emp.user.id %}"
+                                class="mhrms-action-btn mhrms-edit-btn">
+                                    <i class="fa-solid fa-hand-holding-heart"></i>
+                                    <span>Provide Leave</span>
+
+                                </a>
+
+                                 {% comment %} <!-- EDIT -->
+                                <a href="{% url 'missing_attendance_employees' %}"
+                                   class="mhrms-action-btn mhrms-edit-btn">
+
+                                    <i class="fa-solid fa-pen"></i>
+
+                                    <span>Miss Att</span>
+
+                                </a> {% endcomment %}
+
+                                <!-- DOWNLOAD PDF -->
+                               <a href="{% url 'download_attendance_pdf' emp.user.id %}?month={{ current_month }}&year={{ current_year }}"
+                                class="mhrms-action-btn mhrms-download-btn">
+                                    <i class="fa-solid fa-file-pdf"></i>
+                                    <span>Attendance</span>
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="6"
+                            class="text-center text-muted py-5">
+
+                            No employees found for leave.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination-wrapper">
+
+            {% if employees.has_previous %}
+
+            <a href="?page={{ employees.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if current_month %}&month={{ current_month }}{% endif %}{% if current_year %}&year={{ current_year }}{% endif %}"
+            class="pagination-btn">
+
+                Previous
+
+            </a>
+
+            {% endif %}
+
+            <span class="page-info">
+
+                Page {{ employees.number }} of {{ employees.paginator.num_pages }}
+
+            </span>
+
+            {% if employees.has_next %}
+
+            <a href="?page={{ employees.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if current_month %}&month={{ current_month }}{% endif %}{% if current_year %}&year={{ current_year }}{% endif %}"
+            class="pagination-btn">
+
+                Next
+
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+<style>
+    {% load static %}
+    @import url("{% static 'leaves/employee_list.css' %}");
+</style>
+{% endblock page_content %}

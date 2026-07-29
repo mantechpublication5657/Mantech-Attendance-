@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 – Page Not Found | HRMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+
+      --navy:   #0b1437;
+      --navy2:  #112057;
+      --blue:   #2563eb;
+      --blue2:  #1d4ed8;
+      --cyan:   #38bdf8;
+      --green:  #22c55e;
+      --amber:  #f59e0b;
+      --rose:   #f43f5e;
+      --purple: #a855f7;
+      --slate:  #64748b;
+      --light:  #f1f5f9;
+      --white:  #ffffff;
+      --card-bg:#ffffff;
+      --border: rgba(30,58,138,0.09);
+      --shadow: 0 4px 24px rgba(11,20,55,0.10);
+      --shadow-lg: 0 12px 40px rgba(11,20,55,0.16);
+
+
+      --bg:         #0b0f1a;
+      --surface:    #111827;
+      --card:       #161d2e;
+      --border:     rgba(255,255,255,.07);
+      --accent:     #4f8ef7;
+      --accent2:    #a78bfa;
+      --accent3:    #34d399;
+      --text:       #e2e8f0;
+      --muted:      #64748b;
+      --danger:     #f87171;
+    }
+
+    html, body {
+      height: 100%;
+      background: linear-gradient(180deg, var(--navy) 0%, var(--navy2) 100%);
+      color: var(--navy);
+      font-family: 'DM Sans', sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── Animated mesh background ── */
+    .bg-mesh {
+      position: fixed; inset: 0; z-index: 0;
+      overflow: hidden;
+    }
+    .bg-mesh::before {
+      content: '';
+      position: absolute; inset: -50%;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 20%, rgba(79,142,247,.18) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 80% 80%, rgba(167,139,250,.14) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(52,211,153,.08) 0%, transparent 60%);
+      animation: meshPulse 10s ease-in-out infinite alternate;
+    }
+    @keyframes meshPulse {
+      0%   { transform: scale(1) rotate(0deg); }
+      100% { transform: scale(1.06) rotate(3deg); }
+    }
+
+    /* ── Floating grid dots ── */
+    .grid-dots {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* ── Layout ── */
+    .page {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header / Navbar ── */
+    .navbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 2.5rem;
+      border-bottom: 1px solid var(--border);
+      background:linear-gradient(135deg, var(--navy) 0%, #1e3a8a 60%, #1e40af 100%);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .navbar-brand {
+      display: flex; align-items: center; gap: .75rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 1.15rem; font-weight: 700;
+      letter-spacing: .04em;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      display: grid; place-items: center;
+      font-size: .85rem; font-weight: 800;
+      color: #fff;
+      box-shadow: 0 0 18px rgba(79,142,247,.4);
+    }
+    .navbar-status {
+      display: flex; align-items: center; gap: .5rem;
+      font-size: .78rem; color: var(--muted);
+    }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--danger);
+      box-shadow: 0 0 8px var(--danger);
+      animation: blink 1.6s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ── Main hero area ── */
+    .hero {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 3rem 1.5rem;
+    }
+    .card {
+      background: linear-gradient(135deg, var(--navy) 0%, #1e3a8a 60%, #1e40af 100%);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 3.5rem 4rem;
+      max-width: 640px; width: 100%;
+      text-align: center;
+      box-shadow:
+        0 32px 80px rgba(0,0,0,.45),
+        0 0 0 1px rgba(255,255,255,.04) inset;
+      animation: cardIn .7s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes cardIn {
+      from { opacity:0; transform: translateY(28px) scale(.97); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+
+    /* ── Big 404 ── */
+    .error-code {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(6rem, 16vw, 9rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -.04em;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--accent3) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+      display: inline-block;
+      animation: shimmer 4s linear infinite;
+      background-size: 200% 100%;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    .error-code::after {
+      content: attr(data-text);
+      position: absolute; inset: 0;
+      background: inherit;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: blur(28px);
+      opacity: .55;
+      z-index: -1;
+    }
+
+    /* ── Icon badge ── */
+    .icon-badge {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, rgba(79,142,247,.15), rgba(167,139,250,.15));
+      border: 1px solid rgba(79,142,247,.25);
+      border-radius: 50%;
+      display: inline-grid; place-items: center;
+      margin: 1.25rem auto 1.5rem;
+      font-size: 2rem;
+      animation: floatY 3.5s ease-in-out infinite;
+    }
+    @keyframes floatY {
+      0%,100% { transform: translateY(0); }
+      50%     { transform: translateY(-8px); }
+    }
+
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.65rem; font-weight: 700;
+      margin-bottom: .65rem;
+      color: var(--text);
+    }
+    .card-desc {
+      color: var(--muted);
+      font-size: .95rem; line-height: 1.7;
+      font-weight: 300;
+      max-width: 380px; margin: 0 auto 2rem;
+    }
+
+    /* ── Pill breadcrumb ── */
+    .breadcrumb {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: .35rem .9rem;
+      font-size: .75rem; color: var(--muted);
+      margin-bottom: 2rem;
+      font-style: italic;
+      letter-spacing: .02em;
+      overflow: hidden;
+      max-width: 100%;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .breadcrumb span { color: var(--danger); font-style: normal; }
+
+    /* ── Buttons ── */
+    .btn-group {
+      display: flex; flex-wrap: wrap; gap: .85rem;
+      justify-content: center;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .7rem 1.5rem;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .88rem; font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .2s, background .2s;
+      border: none;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #7b5fe8);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(79,142,247,.35);
+    }
+    .btn-primary:hover { box-shadow: 0 6px 28px rgba(79,142,247,.5); }
+    .btn-ghost {
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,.1); }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 1.25rem;
+      font-size: .72rem; color: var(--muted);
+      border-top: 1px solid var(--border);
+      letter-spacing: .03em;
+    }
+    .footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .navbar { padding: 1rem 1.25rem; }
+      .card   { padding: 2.5rem 1.5rem; border-radius: 20px; }
+      .ql-grid { grid-template-columns: repeat(2, 1fr); }
+      .btn-group { flex-direction: column; align-items: center; }
+      .btn { width: 100%; justify-content: center; }
+    }
+
+    /* ── Stagger animation delays ── */
+    .card > * { animation: fadeUp .5s cubic-bezier(.22,1,.36,1) both; }
+    .card > *:nth-child(1) { animation-delay: .15s; }
+    .card > *:nth-child(2) { animation-delay: .22s; }
+    .card > *:nth-child(3) { animation-delay: .29s; }
+    .card > *:nth-child(4) { animation-delay: .35s; }
+    .card > *:nth-child(5) { animation-delay: .41s; }
+    .card > *:nth-child(6) { animation-delay: .48s; }
+    .card > *:nth-child(7) { animation-delay: .54s; }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-mesh"></div>
+<div class="grid-dots"></div>
+
+<div class="page">
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    {% comment %} <a href="/" class="navbar-brand">
+      <div class="logo-icon">MH</div> 
+      Mantech-HRMS
+    </a> {% endcomment %}
+    <div class="navbar-status">
+      <div class="status-dot"></div>
+      Page unavailable
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <main class="hero">
+    <div class="card">
+
+      <!-- 404 number -->
+      <div class="error-code" data-text="404">404</div>
+
+      <!-- Icon -->
+      <div class="icon-badge">🗂️</div>
+
+      <!-- Breadcrumb showing broken path -->
+      <div class="breadcrumb">
+        Mantech-HRMS &nbsp;/&nbsp; <span id="path-display">page-not-found</span>
+      </div>
+
+      <h1 class="card-title">Oops! Page Not Found</h1>
+      <p class="card-desc">
+        The HR resource you're looking for has either been moved, renamed, or doesn't exist. Let's get you back on track.
+      </p>
+
+      <!-- Action buttons -->
+      <div class="btn-group">
+        <a href="/" class="btn btn-primary">
+          🏠 &nbsp;Go to Dashboard
+        </a>
+        <a href="javascript:history.back()" class="btn btn-ghost">
+          ← &nbsp;Go Back
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    &copy; 2026 Mantech-HRMS &nbsp;·&nbsp; <a href="/support/">Contact Support</a> &nbsp;·&nbsp; Error Code: 404
+  </footer>
+
+</div>
+
+<script>
+  // Display the actual requested URL path
+  const pathEl = document.getElementById('path-display');
+  try {
+    const p = window.location.pathname;
+    if (p && p !== '/') pathEl.textContent = p.replace(/^\//, '');
+  } catch(e) {}
+</script>
+
+</body>
+</html>

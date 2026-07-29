@@ -1,0 +1,209 @@
+<!-- templates/attendance/missing_attendance_employees.html -->
+
+{% extends 'layouts/main_layout.html' %}
+
+{% load static %}
+
+{% block title %}
+Missing Attendance
+{% endblock %}
+
+{% block page_content %}
+
+<div class="container-fluid mt-4">
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-header bg-danger text-white">
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+                <h5 class="mb-0">
+                    Missing Attendance Employees
+                    ({{ current_month }} {{ current_year }})
+                </h5>
+
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            {% if messages %}
+                {% for message in messages %}
+
+                    <div class="alert alert-success">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+            {% endif %}
+
+            <!-- FILTER FORM START -->
+
+            <form method="GET" class="row g-3 mb-4">
+
+                <div class="col-md-4">
+
+                    <label class="form-label">Username</label>
+
+                    <input type="text"
+                           name="username"
+                           class="form-control"
+                           placeholder="Search by Username / Emp ID..."
+                           value="{{ selected_username }}">
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <label class="form-label">Month</label>
+
+                    <select name="month" class="form-select">
+
+                        <option value="1" {% if current_month == 1 %}selected{% endif %}>January</option>
+                        <option value="2" {% if current_month == 2 %}selected{% endif %}>February</option>
+                        <option value="3" {% if current_month == 3 %}selected{% endif %}>March</option>
+                        <option value="4" {% if current_month == 4 %}selected{% endif %}>April</option>
+                        <option value="5" {% if current_month == 5 %}selected{% endif %}>May</option>
+                        <option value="6" {% if current_month == 6 %}selected{% endif %}>June</option>
+                        <option value="7" {% if current_month == 7 %}selected{% endif %}>July</option>
+                        <option value="8" {% if current_month == 8 %}selected{% endif %}>August</option>
+                        <option value="9" {% if current_month == 9 %}selected{% endif %}>September</option>
+                        <option value="10" {% if current_month == 10 %}selected{% endif %}>October</option>
+                        <option value="11" {% if current_month == 11 %}selected{% endif %}>November</option>
+                        <option value="12" {% if current_month == 12 %}selected{% endif %}>December</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <label class="form-label">Year</label>
+
+                    <input type="number"
+                           name="year"
+                           class="form-control"
+                           value="{{ current_year }}"
+                           placeholder="Enter year">
+
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+
+                    <button type="submit" class="btn btn-danger w-100">
+
+                        Filter
+
+                    </button>
+
+                </div>
+
+            </form>
+
+            <!-- FILTER FORM END -->
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-hover align-middle">
+
+                    <thead class="table-dark">
+
+                        <tr>
+                            <th>#</th>
+                            <th>Employee</th>
+                            <th>Employee ID</th>
+                            <th>Joining Date</th>
+                            <th>Total Missing Days</th>
+                            <th>Missing Dates</th>
+                            <th width="150">Action</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in employees_data %}
+
+                        <tr>
+
+                            <td>{{ forloop.counter }}</td>
+
+                            <td>
+                                {{ item.employee.user.get_full_name|default:item.employee.user.username }}
+                            </td>
+
+                            <td>
+                                {{ item.employee.emp_id }}
+                            </td>
+
+                            <td>
+                                {{ item.employee.admin_data.joining_date }}
+                            </td>
+
+                            <td>
+
+                                <span class="badge bg-danger">
+                                    {{ item.total_missing }}
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <div style="max-width: 500px;">
+
+                                    {% for d in item.missing_dates %}
+
+                                        <span class="badge bg-warning text-dark mb-1">
+                                            {{ d }}
+                                        </span>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </td>
+
+                            <td>
+
+                                <a href="{% url 'mark_missing_attendance_absent' item.employee.user.id %}?month={{ current_month }}&year={{ current_year }}"
+                                   class="btn btn-danger btn-sm w-100"
+                                   onclick="return confirm('Mark all missing dates as absent?');">
+
+                                    Mark Absent
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="7" class="text-center text-muted py-4">
+
+                                No missing attendance records found.
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

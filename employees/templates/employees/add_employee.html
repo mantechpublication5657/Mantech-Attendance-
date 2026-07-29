@@ -1,0 +1,288 @@
+{% extends 'layouts/main_layout.html' %}
+{% load static %}
+
+{% block title %}Add Employee{% endblock %}
+
+{% block page_content %}
+
+<style>
+    .employee-form-wrapper{
+        padding: 25px;
+    }
+
+    .employee-card{
+        background: #ffffff;
+        border-radius: 22px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        overflow: hidden;
+        border: none;
+    }
+
+    .employee-header{
+        background: linear-gradient(135deg, #2563eb, #1e3a8a);
+        padding: 30px;
+        color: white;
+    }
+
+    .employee-header h2{
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .employee-header p{
+        margin-bottom: 0;
+        opacity: 0.9;
+    }
+
+    .section-title{
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 20px;
+        border-left: 4px solid #2563eb;
+        padding-left: 12px;
+    }
+
+    .form-section{
+        padding: 30px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .form-label{
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 8px;
+    }
+
+    .form-control,
+    .form-select{
+        border-radius: 12px;
+        padding: 12px 14px;
+        border: 1px solid #dbeafe;
+        transition: all 0.3s ease;
+        box-shadow: none;
+    }
+
+    .form-control:focus,
+    .form-select:focus{
+        border-color: #2563eb;
+        box-shadow: 0 0 0 0.15rem rgba(37,99,235,0.15);
+    }
+
+    .submit-btn{
+        background: linear-gradient(135deg,#2563eb,#1d4ed8);
+        color: white;
+        border: none;
+        padding: 14px 28px;
+        border-radius: 14px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .submit-btn:hover{
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(37,99,235,0.25);
+    }
+
+    .cancel-btn{
+        padding: 14px 24px;
+        border-radius: 14px;
+        font-weight: 600;
+    }
+
+    .profile-preview{
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #dbeafe;
+        margin-bottom: 15px;
+    }
+
+    .upload-box{
+        border: 2px dashed #cbd5e1;
+        border-radius: 18px;
+        padding: 25px;
+        text-align: center;
+        background: #f8fafc;
+    }
+
+    .required-star{
+        color: red;
+    }
+
+    .alert{
+        border-radius: 14px;
+    }
+
+    @media(max-width:768px){
+        .employee-form-wrapper{
+            padding: 10px;
+        }
+
+        .form-section{
+            padding: 20px;
+        }
+    }
+</style>
+
+<div class="container-fluid employee-form-wrapper">
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card employee-card">
+
+        <!-- Header -->
+        <div class="employee-header d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h2><i class="fa-solid fa-user-plus me-2"></i> Add New Employee</h2>
+                <p>Create employee account and profile details</p>
+            </div>
+            <div class="mt-3 mt-md-0">
+                <span class="badge bg-light text-dark px-3 py-2">ManTech HRMS</span>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Basic Information -->
+            <div class="form-section">
+                <h4 class="section-title">Basic Information</h4>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Email Address <span class="text-danger">*</span></label>
+                        {{ form.email }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Username <span class="text-danger">*</span></label>
+                        {{ form.username }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">First Name <span class="text-danger">*</span></label>
+                        {{ form.first_name }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Last Name </label>
+                        {{ form.last_name }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Phone Number</label>
+                        {{ form.phone }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Gender</label>
+                        {{ form.gender }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Date of Birth</label>
+                        {{ form.date_of_birth }}
+                    </div>
+                    <div class="col-12 mb-4">
+                        <label class="form-label">Address</label>
+                        {{ form.address }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Department & Role -->
+            <div class="form-section">
+                <h4 class="section-title">Department & Role</h4>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Department</label>
+                        {{ form.department }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Designation</label>
+                        {{ form.designation }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Joining Date <span class="text-danger">*</span></label>
+                        {{ form.joining_date }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Role <span class="text-danger">*</span></label>
+                        {{ form.role }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Contact -->
+            <div class="form-section">
+                <h4 class="section-title">Emergency Contact</h4>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Contact Phone</label>
+                        {{ form.emergency_contact_phone }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Security -->
+            <div class="form-section">
+                <h4 class="section-title">Account Security</h4>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Password <span class="text-danger">*</span></label>
+                        {{ form.password1 }}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                        {{ form.password2 }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Picture -->
+            <div class="form-section">
+                <h4 class="section-title">Profile Picture</h4>
+                <div class="upload-box">
+                    <img src="{% static 'images/default-user.png' %}" class="profile-preview" id="previewImage">
+                    <div class="mb-3">
+                        {{ form.profile_picture }}
+                    </div>
+                    <p class="text-muted mb-0">Upload employee profile photo</p>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="form-section">
+                <div class="d-flex justify-content-end flex-wrap gap-3">
+                    <a href="{% url 'employee_dashboard' %}" class="btn btn-outline-secondary cancel-btn">
+                        <i class="fa-solid fa-arrow-left me-2"></i> Cancel
+                    </a>
+                    <button type="submit" class="submit-btn">
+                        <i class="fa-solid fa-floppy-disk me-2"></i> Create Employee
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Profile Image Preview
+    const imageInput = document.querySelector('input[type="file"]');
+    const previewImage = document.getElementById('previewImage');
+
+    if(imageInput){
+        imageInput.addEventListener('change', function(e){
+            const file = e.target.files[0];
+            if(file){
+                previewImage.src = URL.createObjectURL(file);
+            }
+        });
+    }
+</script>
+
+{% endblock %}

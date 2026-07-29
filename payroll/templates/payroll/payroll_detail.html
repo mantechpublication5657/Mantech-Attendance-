@@ -1,0 +1,841 @@
+{% extends 'layouts/main_layout.html' %}
+{% load static %}
+
+{% block title %}Payroll Details{% endblock %}
+
+{% block page_content %}
+
+<style>
+
+        /* =========================================
+        PAGE WRAPPER
+        ========================================= */
+        /* HALF DAY */
+
+        .bg-halfday{
+
+            background:linear-gradient(
+                135deg,
+                #8b5cf6,
+                #7c3aed
+            );
+
+            color:#fff;
+        }
+        .payroll-wrapper{
+            padding:30px 20px;
+            min-height:100vh;
+            background:
+                linear-gradient(
+                    135deg,
+                    #eef2ff 0%,
+                    #f8fafc 100%
+                );
+        }
+
+        /* =========================================
+        HEADER
+        ========================================= */
+
+        .payroll-header{
+            background:
+                linear-gradient(
+                    135deg,
+                    #4f46e5,
+                    #7c3aed
+                );
+            padding:30px;
+            border-radius:24px;
+            color:#fff;
+            box-shadow:
+                0 10px 25px rgba(79,70,229,.25);
+        }
+
+        .payroll-header h2{
+            font-size:32px;
+            font-weight:700;
+        }
+
+        .payroll-header p{
+            opacity:.9;
+            font-size:15px;
+        }
+
+        /* =========================================
+        BUTTON
+        ========================================= */
+
+        .btn-custom{
+            background:#fff;
+            color:#4f46e5;
+            border:none;
+            border-radius:14px;
+            padding:12px 20px;
+            font-weight:600;
+            transition:.3s;
+            box-shadow:
+                0 5px 15px rgba(0,0,0,.08);
+        }
+
+        .btn-custom:hover{
+            transform:translateY(-2px);
+            background:#f8fafc;
+            color:#4338ca;
+        }
+
+        /* =========================================
+        CARD
+        ========================================= */
+
+        .payroll-card{
+            margin-top:25px;
+            border:none;
+            border-radius:24px;
+            background:#fff;
+            box-shadow:
+                0 10px 30px rgba(0,0,0,.08);
+            overflow:hidden;
+        }
+
+        /* =========================================
+        EMPLOYEE PROFILE
+        ========================================= */
+
+        .employee-profile-card{
+            background:#f8fafc;
+            border:1px solid #e2e8f0;
+            border-radius:22px;
+            padding:24px;
+            margin-bottom:30px;
+        }
+
+        .employee-profile-wrapper{
+            display:flex;
+            align-items:center;
+            gap:20px;
+            flex-wrap:wrap;
+        }
+
+        .employee-avatar{
+            width:90px;
+            height:90px;
+            border-radius:50%;
+            overflow:hidden;
+            border:4px solid #fff;
+            box-shadow:
+                0 5px 15px rgba(0,0,0,.1);
+            flex-shrink:0;
+        }
+
+        .employee-avatar img{
+            width:100%;
+            height:100%;
+            object-fit:cover;
+        }
+
+        .employee-avatar-placeholder{
+            width:100%;
+            height:100%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:
+                linear-gradient(
+                    135deg,
+                    #4f46e5,
+                    #7c3aed
+                );
+            color:#fff;
+            font-size:32px;
+        }
+
+        .employee-info{
+            flex:1;
+        }
+
+        .employee-name{
+            font-size:28px;
+            font-weight:700;
+            color:#1e293b;
+            margin-bottom:8px;
+        }
+
+        .employee-meta{
+            display:flex;
+            flex-wrap:wrap;
+            gap:14px;
+            margin-top:12px;
+        }
+
+        .employee-badge{
+            background:#fff;
+            border:1px solid #e2e8f0;
+            padding:10px 16px;
+            border-radius:14px;
+            font-size:14px;
+            color:#475569;
+            font-weight:600;
+        }
+
+        .employee-badge i{
+            color:#4f46e5;
+            margin-right:8px;
+        }
+
+        /* =========================================
+        SECTION TITLE
+        ========================================= */
+
+        .section-title{
+            font-size:22px;
+            font-weight:700;
+            color:#1e293b;
+            margin-bottom:20px;
+        }
+
+        /* =========================================
+        SALARY BOX
+        ========================================= */
+
+        .salary-box{
+            background:#f8fafc;
+            border:1px solid #e2e8f0;
+            border-radius:18px;
+            padding:20px;
+            transition:.3s;
+            height:100%;
+        }
+
+        .salary-box:hover{
+            transform:translateY(-4px);
+            box-shadow:
+                0 10px 20px rgba(0,0,0,.06);
+        }
+
+        .salary-label{
+            font-size:14px;
+            color:#64748b;
+            margin-bottom:10px;
+            font-weight:600;
+        }
+
+        .salary-value{
+            font-size:24px;
+            font-weight:700;
+            color:#1e293b;
+        }
+
+        /* =========================================
+        ATTENDANCE SUMMARY
+        ========================================= */
+
+        .summary-card{
+            background:#ffffff;
+            border:1px solid #e2e8f0;
+            border-radius:18px;
+            padding:22px;
+            text-align:center;
+            transition:.3s;
+            height:100%;
+        }
+
+        .summary-card:hover{
+            transform:translateY(-4px);
+            box-shadow:
+                0 10px 20px rgba(0,0,0,.06);
+        }
+
+        .summary-icon{
+            width:55px;
+            height:55px;
+            border-radius:16px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin:auto;
+            margin-bottom:15px;
+            font-size:22px;
+            color:#fff;
+        }
+
+        .bg-present{
+            background:#10b981;
+        }
+
+        .bg-absent{
+            background:#ef4444;
+        }
+
+        .bg-late{
+            background:#f59e0b;
+        }
+
+        .bg-leave{
+            background:#6366f1;
+        }
+
+        .bg-days{
+            background:#0ea5e9;
+        }
+
+        .bg-payable{
+            background:#14b8a6;
+        }
+
+        .summary-title{
+            font-size:14px;
+            color:#64748b;
+            font-weight:600;
+            margin-bottom:8px;
+        }
+
+        .summary-value{
+            font-size:28px;
+            font-weight:800;
+            color:#1e293b;
+        }
+
+        /* =========================================
+        NET SALARY
+        ========================================= */
+
+        .net-salary-box{
+            background:
+                linear-gradient(
+                    135deg,
+                    #10b981,
+                    #059669
+                );
+            padding:28px;
+            border-radius:24px;
+            text-align:center;
+            color:#fff;
+            margin-top:25px;
+            box-shadow:
+                0 10px 25px rgba(16,185,129,.25);
+        }
+
+        .net-salary-box h3{
+            font-size:17px;
+            margin-bottom:8px;
+            opacity:.9;
+            font-weight:600;
+        }
+
+        .net-salary-amount{
+            font-size:32px;
+            font-weight:700;
+            letter-spacing:.5px;
+        }
+
+        /* =========================================
+        RESPONSIVE
+        ========================================= */
+
+        @media(max-width:768px){
+
+            .payroll-wrapper{
+                padding:20px 12px;
+            }
+
+            .payroll-header{
+                padding:24px;
+            }
+
+            .payroll-header h2{
+                font-size:24px;
+            }
+
+            .employee-profile-wrapper{
+                flex-direction:column;
+                text-align:center;
+            }
+
+            .employee-name{
+                font-size:22px;
+            }
+
+            .employee-meta{
+                justify-content:center;
+            }
+
+            .salary-value{
+                font-size:20px;
+            }
+
+            .summary-value{
+                font-size:22px;
+            }
+
+            .net-salary-amount{
+                font-size:26px;
+            }
+
+            .btn-custom{
+                width:100%;
+                margin-top:15px;
+            }
+        }
+
+
+        /* =========================================
+        CHART CARD
+        ========================================= */
+
+        .chart-card{
+            background:#fff;
+            border:1px solid #e2e8f0;
+            border-radius:24px;
+            padding:25px;
+            box-shadow:
+                0 10px 25px rgba(0,0,0,.06);
+            height:100%;
+        }
+
+        #attendanceChart{
+            max-height:320px;
+        }
+
+        /* =========================================
+        SMALL NET SALARY
+        ========================================= */
+
+        .net-salary-box{
+            background:
+                linear-gradient(
+                    135deg,
+                    #10b981,
+                    #059669
+                );
+            padding:20px;
+            border-radius:20px;
+            text-align:center;
+            color:#fff;
+            margin-top:25px;
+            box-shadow:
+                0 10px 25px rgba(16,185,129,.20);
+        }
+
+        .net-salary-box h3{
+            font-size:15px;
+            margin-bottom:6px;
+            opacity:.9;
+            font-weight:600;
+        }
+
+        .net-salary-amount{
+            font-size:24px;
+            font-weight:700;
+            letter-spacing:.3px;
+        }
+</style>
+<div class="container-fluid payroll-wrapper">
+
+    <!-- HEADER -->
+    <div class="payroll-header d-flex justify-content-between align-items-center flex-wrap">
+
+        <div>
+            <h2 class="mb-2">
+                <i class="fa-solid fa-money-check-dollar me-2"></i>
+                Payroll Details
+            </h2>
+            <p class="mb-0">
+                Salary breakdown for {{ payroll.month }}/{{ payroll.year }}
+            </p>
+        </div>
+
+        <div class="mt-3 mt-md-0">
+            <a href="{% url 'payroll_dashboard' request.user.id %}" class="btn btn-custom">
+                <i class="fa-solid fa-arrow-left me-2"></i>
+                Back to Payroll
+            </a>
+        </div>
+
+    </div>
+
+    <!-- PAYROLL CARD -->
+    <div class="card payroll-card p-4">
+
+        <!-- =====================================
+             EMPLOYEE PROFILE
+        ====================================== -->
+        <div class="employee-profile-card">
+            <div class="employee-profile-wrapper">
+
+                <!-- PROFILE IMAGE -->
+                <div class="employee-avatar">
+                    {% if employee.profile_picture %}
+                        <img src="{{ employee.profile_picture.url }}"
+                             alt="{{ employee.user.username }}">
+                    {% else %}
+                        <div class="employee-avatar-placeholder">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- USER DETAILS -->
+                <div class="employee-info">
+                    <div class="employee-name text-capitalize">
+                        {{ employee.user.get_full_name|default:employee.user.username }}
+                    </div>
+                    <div class="text-muted">
+                        Payroll Information & Attendance Summary
+                    </div>
+                    <div class="employee-meta">
+                        <div class="employee-badge">
+                            <i class="fa-solid fa-id-badge"></i>
+                            {{ employee.emp_id }}
+                        </div>
+                        <div class="employee-badge">
+                            <i class="fa-solid fa-envelope"></i>
+                            {{ employee.user.email }}
+                        </div>
+                        <div class="employee-badge">
+                            <i class="fa-solid fa-user"></i>
+                            {{ employee.user.username }}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- =====================================
+             ATTENDANCE SUMMARY
+        ====================================== -->
+        <h4 class="section-title mt-4">
+            <i class="fa-solid fa-calendar-check me-2"></i>
+            Attendance Summary
+        </h4>
+
+        <div class="row g-4 mb-4">
+
+            <!-- PRESENT -->
+            <div class="col-lg-2 col-md-4 col-6">
+                <div class="summary-card">
+                    <div class="summary-icon bg-present">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div class="summary-title">Present</div>
+                    <div class="summary-value">{{ present_days }}</div>
+                </div>
+            </div>
+
+            <!-- ABSENT -->
+            <div class="col-lg-2 col-md-4 col-6">
+                <div class="summary-card">
+                    <div class="summary-icon bg-absent">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+                    <div class="summary-title">Absent</div>
+                    <div class="summary-value">{{ absent_days }}</div>
+                </div>
+            </div>
+
+            <!-- LATE -->
+            <div class="col-lg-2 col-md-4 col-6">
+                <div class="summary-card">
+                    <div class="summary-icon bg-late">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div class="summary-title">Late</div>
+                    <div class="summary-value">{{ late_days }}</div>
+                </div>
+            </div>
+
+            <!-- HALF DAY -->
+            <div class="col-lg-2 col-md-4 col-6">
+                <div class="summary-card">
+                    <div class="summary-icon bg-halfday">
+                        <i class="fa-solid fa-business-time"></i>
+                    </div>
+                    <div class="summary-title">Half Day</div>
+                    <div class="summary-value">{{ half_day_days }}</div>
+                </div>
+            </div>
+
+            <!-- LEAVE -->
+            <div class="col-lg-2 col-md-4 col-6">
+                <div class="summary-card">
+                    <div class="summary-icon bg-leave">
+                        <i class="fa-solid fa-calendar-minus"></i>
+                    </div>
+                    <div class="summary-title">Leave</div>
+                    <div class="summary-value">{{ leave_days }}</div>
+                </div>
+            </div>
+
+            <!-- WORKING DAYS -->
+            <div class="col-lg-2 col-md-4 col-6">
+                <div class="summary-card">
+                    <div class="summary-icon bg-days">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </div>
+                    <div class="summary-title">Working Days</div>
+                    <div class="summary-value">{{ total_month_days }}</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- =====================================
+             ATTENDANCE ANALYTICS
+        ====================================== -->
+        <h4 class="section-title mt-5">
+            <i class="fa-solid fa-chart-pie me-2"></i>
+            Attendance Analytics
+        </h4>
+
+        <div class="row g-4 mb-4">
+
+            <!-- PIE CHART -->
+            <div class="col-lg-5">
+                <div class="chart-card">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- ATTENDANCE INFO -->
+            <div class="col-lg-7">
+                <div class="row g-4">
+
+                    <!-- PAYABLE DAYS -->
+                    <div class="col-md-6">
+                        <div class="salary-box">
+                            <div class="salary-label">Payable Days</div>
+                            <div class="salary-value text-primary">{{ payable_days }}</div>
+                        </div>
+                    </div>
+
+                    <!-- CUT DAYS -->
+                    <div class="col-md-6">
+                        <div class="salary-box">
+                            <div class="salary-label">Cut Days</div>
+                            <div class="salary-value text-danger">{{ cut_days }}</div>
+                        </div>
+                    </div>
+
+                    <!-- PER DAY SALARY -->
+                    <div class="col-md-6">
+                        <div class="salary-box">
+                            <div class="salary-label">Per Day Salary</div>
+                            <div class="salary-value">₹ {{ per_day_salary }}</div>
+                        </div>
+                    </div>
+
+                    <!-- HALF DAY SALARY -->
+                    <div class="col-md-6">
+                        <div class="salary-box">
+                            <div class="salary-label">Half Day Salary</div>
+                            <div class="salary-value text-warning">₹ {{ half_day_salary }}</div>
+                        </div>
+                    </div>
+
+                    <!-- ATTENDANCE DEDUCTION -->
+                    <div class="col-md-6">
+                        <div class="salary-box">
+                            <div class="salary-label">Attendance Deduction</div>
+                            <div class="salary-value text-danger">₹ {{ attendance_deduction }}</div>
+                        </div>
+                    </div>
+
+                    <!-- ADMIN DEDUCTION -->
+                    <div class="col-md-6">
+                        <div class="salary-box">
+                            <div class="salary-label">Admin Deduction</div>
+                            <div class="salary-value text-danger">₹ {{ admin_deduction }}</div>
+                        </div>
+                    </div>
+
+                    <!-- TOTAL DEDUCTIONS -->
+                    <div class="col-md-6">
+                        <div class="salary-box">
+                            <div class="salary-label">Total Deductions</div>
+                            <div class="salary-value text-danger">₹ {{ total_deduction }}</div>
+                        </div>
+                    </div>
+
+                    <!-- GROSS SALARY -->
+                    <div class="col-md-6">
+                        <div class="salary-box">
+                            <div class="salary-label">Gross Salary</div>
+                            <div class="salary-value">₹ {{ gross_salary }}</div>
+                        </div>
+                    </div>
+
+                    <!-- FINAL PAYABLE -->
+                    <div class="col-md-6">
+                        <div class="salary-box">
+                            <div class="salary-label">Final Payable</div>
+                            <div class="salary-value text-success">₹ {{ net_salary }}</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- =====================================
+             SALARY COMPONENTS
+        ====================================== -->
+        <h4 class="section-title">
+            <i class="fa-solid fa-wallet me-2"></i>
+            Salary Components
+        </h4>
+
+        <div class="row g-4">
+
+            <!-- BASIC SALARY -->
+            <div class="col-md-6">
+                <div class="salary-box">
+                    <div class="salary-label">
+                        Basic Salary
+                        <small class="text-muted">(Full Month)</small>
+                    </div>
+                    <div class="salary-value">₹ {{ payroll.basic_salary }}</div>
+                </div>
+            </div>
+
+            <!-- EARNED BASIC -->
+            <div class="col-md-6">
+                <div class="salary-box">
+                    <div class="salary-label">
+                        Earned Basic
+                        <small class="text-muted">({{ payable_days }} days)</small>
+                    </div>
+                    <div class="salary-value text-primary">₹ {{ earned_basic_salary }}</div>
+                </div>
+            </div>
+
+            <!-- HRA -->
+            <div class="col-md-6">
+                <div class="salary-box">
+                    <div class="salary-label">
+                        HRA
+                        <small class="text-muted">({{ payroll.hra_rate }}% — Full Month)</small>
+                    </div>
+                    <div class="salary-value">₹ {{ payroll.hra }}</div>
+                </div>
+            </div>
+
+            <!-- EARNED HRA -->
+            <div class="col-md-6">
+                <div class="salary-box">
+                    <div class="salary-label">
+                        Earned HRA
+                        <small class="text-muted">({{ payroll.hra_rate }}%)</small>
+                    </div>
+                    <div class="salary-value text-primary">₹ {{ earned_hra }}</div>
+                </div>
+            </div>
+
+            <!-- DA -->
+            <div class="col-md-6">
+                <div class="salary-box">
+                    <div class="salary-label">
+                        SA
+                        <small class="text-muted">({{ payroll.da_rate }}% — Full Month)</small>
+                    </div>
+                    <div class="salary-value">₹ {{ payroll.da }}</div>
+                </div>
+            </div>
+
+            <!-- EARNED DA -->
+            <div class="col-md-6">
+                <div class="salary-box">
+                    <div class="salary-label">
+                        Earned SA
+                        <small class="text-muted">({{ payroll.da_rate }}%)</small>
+                    </div>
+                    <div class="salary-value text-primary">₹ {{ earned_da }}</div>
+                </div>
+            </div>
+
+            <!-- BONUS -->
+            <div class="col-md-6">
+                <div class="salary-box">
+                    <div class="salary-label">Bonus</div>
+                    <div class="salary-value text-success">₹ {{ payroll.bonus }} {% if payroll.bonus_remark %}<span class = "salary-label">({{ payroll.bonus_remark }})</span>{% endif %}</div>
+                </div>
+            </div>
+
+            <!-- DEDUCTIONS -->
+            <div class="col-md-6">
+                <div class="salary-box">
+                    <div class="salary-label">Admin Deductions</div>
+                    <div class="salary-value text-danger">₹ {{ admin_deduction }} {% if payroll.deduction_remark %}<span class = "salary-label">({{payroll.deduction_remark}})</span>{% endif %}</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- NET SALARY -->
+        <div class="net-salary-box mt-4">
+            <h3>Net Salary</h3>
+            <div class="net-salary-amount">₹ {{ net_salary }}</div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('attendanceChart');
+
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Present', 'Absent', 'Late', 'Leave', 'Half Day'],
+            datasets: [{
+                data: [
+                    {{ present_days }},
+                    {{ absent_days }},
+                    {{ late_days }},
+                    {{ leave_days }},
+                    {{ half_day_days }}
+                ],
+                backgroundColor: [
+                    '#22c55e',   /* Present  — green  */
+                    '#ef4444',   /* Absent   — red    */
+                    '#f59e0b',   /* Late     — amber  */
+                    '#3b82f6',   /* Leave    — blue   */
+                    '#a855f7'    /* Half Day — purple */
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        font: {
+                            size: 14,
+                            weight: '600'
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label  = context.label || '';
+                            const value  = context.parsed || 0;
+                            const total  = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const pct    = total ? ((value / total) * 100).toFixed(1) : 0;
+                            return `${label}: ${value} days (${pct}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+{% endblock %}

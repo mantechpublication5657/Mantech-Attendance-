@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}{% endblock title %}
+
+{% block content %}
+
+{# What does YOUR base.html have? Could be any of these: #}
+{% block extra_css %}{% endblock %}
+{% block styles %}{% endblock %}
+{% block head_extra %}{% endblock %}
+{% block page_css %}{% endblock %}
+{% block css %}{% endblock %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+    {% load static %}
+    @import url("{% static 'css/home.css' %}");
+</style>
+
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="hrms-shell">
+
+    <!-- ── SIDEBAR ── -->
+
+    {% include 'includes/sidebar.html' %}
+   
+    <!-- ── MAIN ── -->
+    <div class="main-content">
+        <!-- Topbar -->
+        {% include 'includes/navbar.html' %}
+    
+        <!-- MAIN AREA -->
+
+        <!-- CONTENT -->
+        {% comment %} <div class="p-4 bg-light" style="min-height:100vh;"> {% endcomment %}
+            {% block page_content %}
+                
+            {% endblock %}
+        {% comment %} </div> {% endcomment %}
+
+    </div>
+</div>
+
+{% endblock %}
+
+
+ 

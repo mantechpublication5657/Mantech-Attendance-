@@ -1,0 +1,191 @@
+{% extends 'layouts/main_layout.html' %}
+
+{% block title %}Add Holiday{% endblock %}
+{% load static %}
+
+{% block page_content %}
+<div class="container py-4" style="max-width: 680px;">
+
+  <!-- Breadcrumb -->
+  <nav class="mb-2" style="font-size:13px; color: #888;">
+    <a href="javascript:history.back()" class="text-muted text-decoration-none">Live</a>
+    &rsaquo;
+    <span>Add Holiday</span>
+  </nav>
+
+  <h4 class="fw-500 mb-1">Add Holiday</h4>
+  <p class="text-muted mb-4" style="font-size:14px;">
+    Mark all active employees as <strong>Leave</strong> on a specific date.
+  </p>
+
+  <!-- Messages -->
+  {% for msg in messages %}
+  <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+    {{ msg }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+
+  <div class="card border shadow-sm p-4">
+    <form method="post" id="holiday-form">
+      {% csrf_token %}
+
+      <!-- Date -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">
+          Holiday Date <span class="text-danger">*</span>
+        </label>
+        <input
+          type="date"
+          name="date"
+          class="form-control"
+          value="{{ form_data.date|default:'' }}"
+          required
+        >
+      </div>
+
+      <!-- Holiday Type -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">
+          Holiday Type <span class="text-danger">*</span>
+        </label>
+        <div class="d-flex flex-wrap gap-2" id="type-selector">
+          {% for value, label in holiday_type_choices %}
+          <label
+            class="type-chip {% if form_data.holiday_type == value %}active{% endif %}"
+            data-value="{{ value }}"
+          >
+            <input
+              type="radio"
+              name="holiday_type"
+              value="{{ value }}"
+              class="d-none"
+              {% if form_data.holiday_type == value %}checked{% endif %}
+            >
+            {% if value == 'Festival' %}🎉
+            {% elif value == 'Government Holiday' %}🏛️
+            {% elif value == 'National Holiday' %}🇮🇳
+            {% elif value == 'Regional Holiday' %}📍
+            {% elif value == 'Optional Holiday' %}📅
+            {% else %}✏️
+            {% endif %}
+            {{ label }}
+          </label>
+          {% endfor %}
+        </div>
+
+        <!-- Other type input -->
+        <div id="custom-type-wrap" class="mt-2" style="display:none;">
+          <input
+            type="text"
+            name="custom_type"
+            class="form-control"
+            placeholder="Specify holiday type…"
+            value="{{ form_data.custom_type|default:'' }}"
+            maxlength="100"
+          >
+        </div>
+      </div>
+
+      <!-- Remarks -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold">
+          Remarks
+          <span class="text-muted fw-normal">(optional)</span>
+        </label>
+        <textarea
+          name="remarks"
+          class="form-control"
+          rows="3"
+          placeholder="e.g. Republic Day – offices remain closed nationwide"
+        >{{ form_data.remarks|default:'' }}</textarea>
+      </div>
+
+      <hr class="my-3">
+
+      <!-- Info banner -->
+      <div class="alert alert-info d-flex align-items-center gap-2 py-2 mb-4" style="font-size:13px;">
+        <i class="bi bi-info-circle-fill"></i>
+        This will mark <strong>all active employees</strong> as <code>Leave</code> on the selected date.
+        Employees who already have an attendance record that day will be skipped.
+      </div>
+
+      <!-- Actions -->
+      <div class="d-flex justify-content-end gap-2">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">
+          ✓ Apply Holiday
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<style>
+.type-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+  background: #fff;
+  color: #555;
+  user-select: none;
+}
+.type-chip:hover { border-color: #adb5bd; background: #f8f9fa; }
+.type-chip.active {
+  border-color: #0d6efd;
+  background: #e7f1ff;
+  color: #0a58ca;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const chips = document.querySelectorAll('.type-chip');
+  const customWrap = document.getElementById('custom-type-wrap');
+
+  function updateOtherVisibility(val) {
+    customWrap.style.display = val === 'Other' ? 'block' : 'none';
+  }
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', function () {
+      chips.forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+      this.querySelector('input[type=radio]').checked = true;
+      updateOtherVisibility(this.dataset.value);
+    });
+  });
+
+  // On page load (for form_data repopulation)
+  const checked = document.querySelector('.type-chip.active');
+  if (checked) updateOtherVisibility(checked.dataset.value);
+
+  // Form validation
+  document.getElementById('holiday-form').addEventListener('submit', function (e) {
+    const selected = document.querySelector('.type-chip.active');
+    if (!selected) {
+      e.preventDefault();
+      alert('Please select a holiday type.');
+      return;
+    }
+    if (selected.dataset.value === 'Other') {
+      const customInput = document.querySelector('input[name=custom_type]');
+      if (!customInput.value.trim()) {
+        e.preventDefault();
+        customInput.focus();
+        customInput.classList.add('is-invalid');
+        return;
+      }
+    }
+  });
+});
+</script>
+{% endblock %}
