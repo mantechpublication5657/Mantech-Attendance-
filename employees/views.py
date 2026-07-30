@@ -1,4 +1,5 @@
 # employees/views.py
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
@@ -19,6 +20,7 @@ from .forms import (
 from .models import EmployeeProfile, AdminControlledData
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 from datetime import date
 from calendar import monthrange
 from attendance.models import Attendance
@@ -720,15 +722,22 @@ def add_employee(request):
                 f"Best regards,\n"
                 f"Mantech Publication Team"
             )
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                [user.email],
-                fail_silently=False,
-            )
-
-            messages.success(request, f"Employee added successfully. An OTP has been sent to {user.email} for email verification.")
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    fail_silently=False,
+                )
+                messages.success(request, f"Employee added successfully. An OTP has been sent to {user.email} for email verification.")
+            except Exception:
+                logger.exception("Failed to send verification OTP email to %s", user.email)
+                messages.warning(
+                    request,
+                    f"Employee added successfully, but the verification email to {user.email} could not be sent. "
+                    "Use 'Resend OTP' on the verification page to try again."
+                )
             return redirect("verify_otp", user_id=user.id)
     else:
         form = AddEmployeeForm()

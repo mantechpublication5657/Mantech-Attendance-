@@ -1,5 +1,6 @@
 
 # Create your views here.
+import logging
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.contrib import messages
@@ -15,6 +16,7 @@ from django.contrib.auth import get_user_model
 from .models import User
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 def verify_user_otp(request, user_id):
@@ -92,15 +94,19 @@ def resend_otp(request, user_id):
         f"Mantech Publication HRMS Team"
     )
 
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [user.email],
-        fail_silently=False,
-    )
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=False,
+        )
+        messages.success(request, f"New OTP sent to your email {user.username.capitalize()}.")
+    except Exception:
+        logger.exception("Failed to resend OTP email to %s", user.email)
+        messages.error(request, "Could not send the OTP email right now. Please try again in a moment.")
 
-    messages.success(request, f"New OTP sent to your email {user.username.capitalize()}.")
     return redirect('verify_otp', user_id=user.id)
 
 def verified_view(request):
