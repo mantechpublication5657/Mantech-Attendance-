@@ -16,25 +16,35 @@ from django.db import migrations, models
 
 def alter_user_id_to_uuid(apps, schema_editor):
     if schema_editor.connection.vendor == 'postgresql':
-        # The (dead-code, always-empty) OTP model's FK to User.id is still
-        # live at this point in migration history (only dropped when OTP
-        # itself is deleted in migration 0007) and blocks changing the type
-        # of a column referenced by a foreign key. Drop any such FK
-        # constraints first - nothing needs to re-add them since the only
-        # referencing table (accounts_otp) is deleted a few migrations later
-        # and never queried in between.
+        # Several tables have a live FK to User.id at this exact point in
+        # migration history: the dead-code OTP model (dropped 5 migrations
+        # later in 0007), and - easy to miss - Django's own auto-created M2M
+        # "through" tables for User.groups and User.user_permissions
+        # (accounts_user_groups, accounts_user_user_permissions), which
+        # exist for the lifetime of the app. A FK blocks changing the type
+        # of the column it references, so for every such table: drop the FK
+        # constraint, then ALSO convert that table's own referencing column
+        # to uuid (safe - all of these tables are guaranteed empty here,
+        # since this runs immediately after User is first created and before
+        # any group/permission/OTP could possibly have been assigned yet).
         schema_editor.execute("""
             DO $$
             DECLARE
                 r RECORD;
+                col_name text;
             BEGIN
                 FOR r IN
-                    SELECT conname, conrelid::regclass AS table_name
+                    SELECT conname, conrelid::regclass AS table_name, conrelid, conkey
                     FROM pg_constraint
                     WHERE confrelid = 'accounts_user'::regclass
                       AND contype = 'f'
                 LOOP
+                    SELECT attname INTO col_name
+                    FROM pg_attribute
+                    WHERE attrelid = r.conrelid AND attnum = r.conkey[1];
+
                     EXECUTE format('ALTER TABLE %%s DROP CONSTRAINT %%I', r.table_name, r.conname);
+                    EXECUTE format('ALTER TABLE %%s ALTER COLUMN %%I TYPE uuid USING gen_random_uuid()', r.table_name, col_name);
                 END LOOP;
             END $$;
         """)
