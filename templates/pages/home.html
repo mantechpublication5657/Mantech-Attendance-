@@ -1436,6 +1436,177 @@
 
     </div>
 
+    <!-- Attendance Leaderboard -->
+    <div class="panel" style="margin-bottom:20px;">
+
+        <div class="panel-head">
+
+            <h3>
+
+                <i class="bi bi-trophy-fill"
+                style="color:var(--amber);margin-right:7px;"></i>
+
+                Early Bird Leaderboard
+
+            </h3>
+
+            <span style="font-size:12px;font-weight:400;color:var(--slate);">
+                Check-in before 9:30 AM
+            </span>
+
+        </div>
+
+        <div class="panel-body" style="padding-top:4px;">
+
+            <div class="leaderboard-list">
+
+                {% for record in leaderboard %}
+
+                <div class="leaderboard-item rank-{{ forloop.counter }}">
+
+                    <div class="rank-badge">
+                        {% if forloop.counter == 1 %}
+                            <i class="bi bi-trophy-fill"></i>
+                        {% else %}
+                            {{ forloop.counter }}
+                        {% endif %}
+                    </div>
+
+                    <div class="employee-avatar leaderboard-avatar">
+                        {% if record.employee.employee_profile.profile_picture %}
+                        <img src="{{ record.employee.employee_profile.profile_picture.url }}" alt="{{ record.employee.username }}">
+                        {% else %}
+                        <div class="employee-avatar-placeholder">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="leaderboard-info">
+                        <div class="leaderboard-name">
+                            {{ record.employee.first_name }} {{ record.employee.last_name }}
+                        </div>
+                        <div class="leaderboard-role">
+                            {{ record.employee.employee_profile.admin_data.role|default:"Employee" }}
+                        </div>
+                    </div>
+
+                    <div class="leaderboard-time">
+                        <i class="bi bi-clock"></i>
+                        {{ record.check_in|time:"h:i A" }}
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div class="empty-notice">
+                    <i class="bi bi-trophy"></i>
+                    <p>No one has checked in before 9:30 AM yet.</p>
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <style>
+
+        .leaderboard-list{
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+        }
+
+        .leaderboard-item{
+            display:flex;
+            align-items:center;
+            gap:14px;
+            padding:12px 14px;
+            border-radius:14px;
+            background:#f8fafc;
+            border:1px solid #eef2f7;
+            transition:0.3s ease;
+        }
+
+        .leaderboard-item:hover{
+            transform:translateY(-2px);
+            box-shadow:0 4px 14px rgba(0,0,0,0.06);
+        }
+
+        .leaderboard-item.rank-1{
+            background:linear-gradient(90deg, rgba(250,204,21,0.12), #f8fafc 60%);
+            border-color:rgba(250,204,21,0.4);
+        }
+
+        .leaderboard-item.rank-2{
+            background:linear-gradient(90deg, rgba(148,163,184,0.14), #f8fafc 60%);
+            border-color:rgba(148,163,184,0.4);
+        }
+
+        .leaderboard-item.rank-3{
+            background:linear-gradient(90deg, rgba(217,119,6,0.12), #f8fafc 60%);
+            border-color:rgba(217,119,6,0.35);
+        }
+
+        .rank-badge{
+            min-width:32px;
+            height:32px;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:700;
+            font-size:14px;
+            color:#fff;
+            background:#94a3b8;
+        }
+
+        .rank-1 .rank-badge{ background:#facc15; color:#78350f; }
+        .rank-2 .rank-badge{ background:#94a3b8; }
+        .rank-3 .rank-badge{ background:#d97706; }
+
+        .leaderboard-avatar{
+            width:40px;
+            height:40px;
+            border-radius:50%;
+            overflow:hidden;
+            flex-shrink:0;
+        }
+
+        .leaderboard-info{
+            flex:1;
+            min-width:0;
+        }
+
+        .leaderboard-name{
+            font-size:14px;
+            font-weight:700;
+            color:#0f172a;
+            text-transform:capitalize;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+
+        .leaderboard-role{
+            font-size:12px;
+            color:var(--slate);
+            text-transform:capitalize;
+        }
+
+        .leaderboard-time{
+            font-size:13px;
+            font-weight:600;
+            color:#2563eb;
+            white-space:nowrap;
+        }
+
+    </style>
+
     <!-- Notice Board -->
     <div class="panel">
 
@@ -1462,7 +1633,8 @@
 
                 {% for notice in notices|slice:":5" %}
 
-                <div class="notice-item">
+                <div class="notice-item"
+                    onclick="window.location='{% url 'notice_overview' notice.id %}'">
 
                     <!-- Notice Icon -->
                     <div class="notice-type
@@ -1526,7 +1698,8 @@
                                 <!-- Update -->
                                 <a href="{% url 'notice_edit' notice.id %}"
                                 class="edit-btn"
-                                title="Edit Notice">
+                                title="Edit Notice"
+                                onclick="event.stopPropagation()">
 
                                     <i class="bi bi-pencil-square"></i>
 
@@ -1536,7 +1709,7 @@
                                 <a href="{% url 'notice_delete' notice.id %}"
                                 class="delete-btn"
                                 title="Delete Notice"
-                                onclick="return confirm('Delete this notice?')">
+                                onclick="event.stopPropagation(); return confirm('Delete this notice?')">
 
                                     <i class="bi bi-trash-fill"></i>
 
@@ -1602,6 +1775,7 @@
             background:#f8fafc;
             transition:0.3s ease;
             border:1px solid #eef2f7;
+            cursor:pointer;
         }
 
         .notice-item:hover{

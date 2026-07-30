@@ -44,7 +44,26 @@ def notice_dashboard(request):
         "noticeboard/notice_dashboard.html",
         context
     )
-    
+
+
+@login_required
+def notice_overview(request, notice_id):
+
+    notice = get_object_or_404(
+        NoticeBoard,
+        id=notice_id
+    )
+
+    context = {
+        "notice": notice
+    }
+
+    return render(
+        request,
+        "noticeboard/notice_overview.html",
+        context
+    )
+
 # views.py
 
 from django.shortcuts import render, redirect, get_object_or_404

@@ -12,6 +12,13 @@ urlpatterns = [
     ),
     # urls.py
 
+    path(
+        'notice/<int:notice_id>/',
+        views.notice_overview,
+        name='notice_overview'
+    ),
+    # urls.py
+
 path(
     'notice/edit/<int:notice_id>/',
     views.notice_edit,

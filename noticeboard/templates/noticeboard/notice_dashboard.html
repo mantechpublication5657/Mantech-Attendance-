@@ -86,10 +86,15 @@ Notice Dashboard
         gap:10px;
 
         transition:0.3s ease;
+
+        text-decoration:none;
+        color:inherit;
+        cursor:pointer;
     }
 
     .notice-item:hover{
         transform:translateY(-2px);
+        box-shadow:0 4px 14px rgba(0,0,0,0.08);
     }
 
     .notice-item.warning{
@@ -248,7 +253,7 @@ Notice Dashboard
 
                 {% for notice in notices %}
 
-                <div class="notice-item {{ notice.message_type }}">
+                <a href="{% url 'notice_overview' notice.id %}" class="notice-item {{ notice.message_type }}">
 
                     <div class="notice-head">
 
@@ -281,7 +286,7 @@ Notice Dashboard
 
                     </div>
 
-                </div>
+                </a>
 
                 {% empty %}
 

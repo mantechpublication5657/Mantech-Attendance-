@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 
 from employees.models import EmployeeProfile
 from attendance.models import Attendance
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time as dt_time
 import calendar
 from noticeboard.models import NoticeBoard
 from grievances.models import AdminNotification
@@ -188,6 +188,25 @@ def home_dashboard(request):
 
     present_employee_ids = present_records.values_list('employee_id', flat=True)
 
+    # =========================================
+    # ATTENDANCE LEADERBOARD (TOP 3 EARLIEST CHECK-INS)
+    # =========================================
+    # Only employees who checked in at/before the 9:30 cutoff qualify.
+    # Ranking is purely by check-in time, so a late arrival among the
+    # current top 3 naturally falls out as soon as someone earlier is
+    # queried in — no separate "late" bookkeeping needed.
+    LEADERBOARD_CUTOFF = dt_time(9, 30)
+
+    leaderboard = Attendance.objects.filter(
+        date=today,
+        check_in__isnull=False,
+        check_in__lte=LEADERBOARD_CUTOFF
+    ).select_related(
+        'employee',
+        'employee__employee_profile',
+        'employee__employee_profile__admin_data'
+    ).order_by('check_in')[:3]
+
     # Absent = either has a record with Absent/Leave status today,
     # OR has no record at all today
     # We handle both cases by querying all employees then excluding present ones
@@ -278,6 +297,9 @@ def home_dashboard(request):
     # NOTICEBOARD
     "notices": notices,
     "notices_count": notices.count(),
+
+    # LEADERBOARD
+    "leaderboard": leaderboard,
     
     # UNSEEN COUNT FOR GRAVIENCE
     'unseen_count': unseen_count,

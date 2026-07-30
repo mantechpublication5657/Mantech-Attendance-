@@ -1,0 +1,222 @@
+{% extends "layouts/main_layout.html" %}
+
+{% block title %}
+Notice Overview
+{% endblock %}
+
+{% block page_content %}
+
+<style>
+
+.notice-overview-wrapper{
+    padding:20px;
+    display:flex;
+    justify-content:center;
+}
+
+.notice-overview-card{
+    width:100%;
+    max-width:700px;
+
+    background:#fff;
+    border-radius:18px;
+    padding:30px;
+
+    box-shadow:0 4px 20px rgba(0,0,0,0.08);
+}
+
+.notice-overview-card.warning{ border-left:5px solid #dc2626; }
+.notice-overview-card.payroll{ border-left:5px solid #059669; }
+.notice-overview-card.attendance{ border-left:5px solid #d97706; }
+.notice-overview-card.general{ border-left:5px solid #2563eb; }
+.notice-overview-card.holiday{ border-left:5px solid #7c3aed; }
+.notice-overview-card.meeting{ border-left:5px solid #0f766e; }
+.notice-overview-card.important{ border-left:5px solid #ea580c; }
+
+.notice-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+    gap:10px;
+}
+
+.notice-head h2{
+    margin:0;
+    font-size:24px;
+    font-weight:700;
+    color:#0f172a;
+}
+
+.back-btn{
+    text-decoration:none;
+    background:#eff6ff;
+    color:#2563eb;
+
+    padding:10px 16px;
+    border-radius:10px;
+
+    font-size:14px;
+    font-weight:600;
+
+    transition:0.3s ease;
+    white-space:nowrap;
+}
+
+.back-btn:hover{
+    background:#2563eb;
+    color:#fff;
+}
+
+.badge-type{
+    padding:6px 12px;
+    border-radius:30px;
+    font-size:12px;
+    background:#e2e8f0;
+    font-weight:600;
+    text-transform:capitalize;
+    white-space:nowrap;
+}
+
+.notice-message{
+    color:#475569;
+    font-size:15px;
+    line-height:1.8;
+
+    white-space:pre-line;
+    word-break:break-word;
+    overflow-wrap:break-word;
+
+    margin-bottom:20px;
+}
+
+.notice-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+
+    padding-top:16px;
+    border-top:1px solid #e2e8f0;
+
+    font-size:13px;
+    color:#64748b;
+}
+
+.notice-actions{
+    display:flex;
+    gap:12px;
+    margin-top:24px;
+}
+
+.btn-edit,
+.btn-delete{
+    text-decoration:none;
+    padding:10px 18px;
+    border-radius:10px;
+    font-size:14px;
+    font-weight:600;
+    border:none;
+    transition:0.3s ease;
+}
+
+.btn-edit{
+    background:#eff6ff;
+    color:#2563eb;
+}
+
+.btn-edit:hover{
+    background:#2563eb;
+    color:#fff;
+}
+
+.btn-delete{
+    background:#fef2f2;
+    color:#dc2626;
+}
+
+.btn-delete:hover{
+    background:#dc2626;
+    color:#fff;
+}
+
+@media(max-width:768px){
+
+    .notice-overview-card{
+        padding:22px;
+    }
+
+    .notice-head{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+}
+
+</style>
+
+<div class="notice-overview-wrapper">
+
+    <div class="notice-overview-card {{ notice.message_type }}">
+
+        <div class="notice-head">
+
+            <h2>
+                {{ notice.title }}
+            </h2>
+
+            <a href="{% url 'notice_dashboard' %}" class="back-btn">
+                <i class="bi bi-arrow-left"></i>
+                Back
+            </a>
+
+        </div>
+
+        <span class="badge-type">
+            {{ notice.message_type }}
+        </span>
+
+        <div class="notice-message" style="margin-top:18px;">
+            {{ notice.message|linebreaksbr }}
+        </div>
+
+        <div class="notice-meta">
+
+            <span>
+                Notice For: <strong>{{ notice.notice_type }}</strong>
+            </span>
+
+            <span>
+                Posted: {{ notice.created_at|date:"d M Y • h:i A" }}
+            </span>
+
+            <span>
+                Status:
+                <strong>
+                    {% if notice.is_active %}Active{% else %}Inactive{% endif %}
+                </strong>
+            </span>
+
+        </div>
+
+        {% if request.user.is_staff or request.user.is_superuser %}
+        <div class="notice-actions">
+
+            <a href="{% url 'notice_edit' notice.id %}" class="btn-edit">
+                <i class="bi bi-pencil-square"></i> Edit
+            </a>
+
+            <form method="POST" action="{% url 'notice_delete' notice.id %}" onsubmit="return confirm('Delete this notice?');" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-delete">
+                    <i class="bi bi-trash"></i> Delete
+                </button>
+            </form>
+
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}
