@@ -414,14 +414,9 @@
 
             <!-- Avatar Grid -->
             <div class="pp-avatar-grid" id="avatarGrid">
-                <!--
-                    Replace these with your actual icon filenames.
-                    Path pattern: {% static 'icons/<filename>' %}
-                    Add/remove <div class="pp-avatar-item"> blocks as needed.
-                -->
                 {% for avatar in avatar_list %}
                 <div class="pp-avatar-item" data-avatar="{{ avatar }}">
-                    <img src="{% static 'icons/' %}{{ avatar }}"
+                    <img src="{% static 'icons/'|add:avatar %}"
                          alt="{{ avatar|default:"Avatar" }}"
                          class="pp-avatar-img">
                     <span class="pp-avatar-check">

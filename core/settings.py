@@ -271,13 +271,15 @@ if CLOUDINARY_CLOUD_NAME:
 STATICFILES_STORAGE = STORAGES["staticfiles"]["BACKEND"]
 DEFAULT_FILE_STORAGE = STORAGES["default"]["BACKEND"]
 
-from django.conf import settings
-
 # FOR AVATAR SELECTION
+# Plain filenames relative to static/icons/ - the only consumer is
+# employee_detail.html, which builds {% static 'icons/'|add:avatar %} from
+# each entry, so these must NOT be full filesystem paths (they used to be,
+# via os.path.join(STATICFILES_DIRS[0], ...), which broke under DEBUG=False
+# since ManifestStaticFilesStorage validates the resulting path against the
+# actual collected static file list).
 AVATAR_FILENAMES = ["avatar_01.jpg", "avatar_02.png", "avatar_03.png", "avatar_04.png", "avatar_05.png", "avatar_06.png", "avatar_07.png", "avatar_08.png", "avatar_09.png","avatar_01.jpg","avatar_02.jpg","avatar_03.jpg", "avatar_04.jpg", "avatar_05.jpg", "avatar_06.jpg", "avatar_07.jpg", "avatar_08.jpg","avatar_09.jpg","avatar_10.jpg","avatar_11.jpg","avatar_12.jpg","avatar_13.jpg"]
-avatar_source = os.path.join(settings.STATICFILES_DIRS[0], "icons") 
-avatar_list = [os.path.join(avatar_source, filename) for filename in AVATAR_FILENAMES]
-AVATAR_LIST = avatar_list  # e.g.  /your_project/static/icons/avatar_01.jpg
+AVATAR_LIST = AVATAR_FILENAMES
 
 
 # FOR MEDIA FILES
