@@ -1,5 +1,4 @@
 # employees/views.py
-import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
@@ -8,9 +7,6 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from decimal import Decimal
 from django.conf import settings
-from django.utils import timezone
-from django.utils.crypto import get_random_string
-from django.core.mail import send_mail
 
 from .forms import (
     EmployeeBasicInfoForm,
@@ -20,7 +16,6 @@ from .forms import (
 from .models import EmployeeProfile, AdminControlledData
 
 User = get_user_model()
-logger = logging.getLogger(__name__)
 from datetime import date
 from calendar import monthrange
 from attendance.models import Attendance
@@ -705,40 +700,15 @@ def add_employee(request):
                 role=form.cleaned_data.get("role"),
             )
 
-            # Send an email-verification OTP to the new employee
-            otp = get_random_string(length=6, allowed_chars='0123456789')
-            user.email_otp = otp
-            user.otp_last_sent = timezone.now()
-            user.is_email_verified = False
+            # Admin is directly vouching for this employee's email/identity
+            # when filling out this form, so skip the OTP verification step
+            # entirely - the account is immediately usable. This also means
+            # employee creation never depends on email delivery working.
+            user.is_email_verified = True
             user.save()
 
-            subject = "MP HRMS-Email Verification"
-            message = (
-                f"Hello {user.username.capitalize()},\n\n"
-                f"Thank you for registering with Mantech Publication.\n\n"
-                f"To complete your email verification, please use the One-Time Password (OTP) below:\n\n"
-                f"Your OTP Code: {otp}\n\n"
-                f"This code will expire in 5 minutes. Please do not share it with anyone.\n\n"
-                f"Best regards,\n"
-                f"Mantech Publication Team"
-            )
-            try:
-                send_mail(
-                    subject,
-                    message,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [user.email],
-                    fail_silently=False,
-                )
-                messages.success(request, f"Employee added successfully. An OTP has been sent to {user.email} for email verification.")
-            except Exception:
-                logger.exception("Failed to send verification OTP email to %s", user.email)
-                messages.warning(
-                    request,
-                    f"Employee added successfully, but the verification email to {user.email} could not be sent. "
-                    "Use 'Resend OTP' on the verification page to try again."
-                )
-            return redirect("verify_otp", user_id=user.id)
+            messages.success(request, f"Employee added successfully. {user.username.capitalize()} can log in now with the email/password you set.")
+            return redirect("employee_list")
     else:
         form = AddEmployeeForm()
     return render(request, "employees/add_employee.html", {"form": form})
