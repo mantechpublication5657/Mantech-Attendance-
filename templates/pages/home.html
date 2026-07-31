@@ -1458,18 +1458,72 @@
 
         <div class="panel-body" style="padding-top:4px;">
 
-            <div class="leaderboard-list">
+            <div class="podium-row">
 
                 {% for record in leaderboard %}
 
-                <div class="leaderboard-item rank-{{ forloop.counter }}">
+                <div class="podium-card rank-{{ forloop.counter }}">
 
-                    <div class="rank-badge">
+                    <div class="podium-rank-icon">
                         {% if forloop.counter == 1 %}
                             <i class="bi bi-trophy-fill"></i>
                         {% else %}
-                            {{ forloop.counter }}
+                            <i class="bi bi-award-fill"></i>
                         {% endif %}
+                    </div>
+
+                    <div class="podium-avatar-wrap">
+                        <div class="employee-avatar podium-avatar">
+                            {% if record.employee.employee_profile.profile_picture %}
+                            <img src="{{ record.employee.employee_profile.profile_picture.url }}" alt="{{ record.employee.username }}">
+                            {% else %}
+                            <div class="employee-avatar-placeholder">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="podium-position">{{ forloop.counter }}</div>
+                    </div>
+
+                    <div class="podium-name">
+                        {{ record.employee.first_name }} {{ record.employee.last_name }}
+                    </div>
+
+                    <div class="podium-role">
+                        {{ record.employee.employee_profile.admin_data.role|default:"Employee" }}
+                    </div>
+
+                    <div class="podium-time">
+                        <i class="bi bi-clock"></i>
+                        {{ record.check_in|time:"h:i A" }}
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div class="empty-notice">
+                    <i class="bi bi-trophy"></i>
+                    <p>No one has checked in before 9:30 AM yet.</p>
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% if other_attendance %}
+            <div class="other-attendance-list">
+
+                <div class="other-attendance-title">
+                    Other Employees
+                </div>
+
+                {% for record in other_attendance %}
+
+                <div class="other-attendance-item">
+
+                    <div class="other-rank">
+                        {{ forloop.counter|add:3 }}
                     </div>
 
                     <div class="employee-avatar leaderboard-avatar">
@@ -1498,16 +1552,10 @@
 
                 </div>
 
-                {% empty %}
-
-                <div class="empty-notice">
-                    <i class="bi bi-trophy"></i>
-                    <p>No one has checked in before 9:30 AM yet.</p>
-                </div>
-
                 {% endfor %}
 
             </div>
+            {% endif %}
 
         </div>
 
@@ -1515,59 +1563,197 @@
 
     <style>
 
+        .other-attendance-list{
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+            margin-top:16px;
+            padding-top:14px;
+            border-top:1px solid #eef2f7;
+        }
+
+        .other-attendance-title{
+            font-size:12px;
+            font-weight:700;
+            color:var(--slate);
+            text-transform:uppercase;
+            letter-spacing:0.5px;
+            margin-bottom:2px;
+        }
+
+        .other-attendance-item{
+            display:flex;
+            align-items:center;
+            gap:14px;
+            padding:10px 14px;
+            border-radius:12px;
+            background:#f8fafc;
+        }
+
+        .other-rank{
+            min-width:24px;
+            font-size:13px;
+            font-weight:700;
+            color:var(--slate);
+            text-align:center;
+        }
+
         .leaderboard-list{
             display:flex;
             flex-direction:column;
             gap:12px;
         }
 
-        .leaderboard-item{
-            display:flex;
-            align-items:center;
+        /* Podium (Top 3) */
+
+        @keyframes podiumIn{
+            from{ opacity:0; transform:translateY(24px) scale(0.94); }
+            to{ opacity:1; transform:translateY(0) scale(1); }
+        }
+
+        @keyframes crownFloat{
+            0%,100%{ transform:translateY(0) rotate(-6deg); }
+            50%{ transform:translateY(-5px) rotate(6deg); }
+        }
+
+        @keyframes goldPulse{
+            0%,100%{ box-shadow:0 4px 18px rgba(250,204,21,0.25); }
+            50%{ box-shadow:0 4px 28px rgba(250,204,21,0.5); }
+        }
+
+        .podium-row{
+            display:grid;
+            grid-template-columns:repeat(3, 1fr);
             gap:14px;
-            padding:12px 14px;
-            border-radius:14px;
+        }
+
+        .podium-card{
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            text-align:center;
+            padding:20px 12px 16px;
+            border-radius:16px;
             background:#f8fafc;
             border:1px solid #eef2f7;
-            transition:0.3s ease;
+            opacity:0;
+            animation:podiumIn 0.5s ease forwards;
+            transition:transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .leaderboard-item:hover{
-            transform:translateY(-2px);
-            box-shadow:0 4px 14px rgba(0,0,0,0.06);
+        .podium-card:nth-child(1){ animation-delay:0.1s; }
+        .podium-card:nth-child(2){ animation-delay:0.25s; }
+        .podium-card:nth-child(3){ animation-delay:0.4s; }
+
+        .podium-card:hover{
+            transform:translateY(-6px);
+            box-shadow:0 10px 24px rgba(0,0,0,0.08);
         }
 
-        .leaderboard-item.rank-1{
-            background:linear-gradient(90deg, rgba(250,204,21,0.12), #f8fafc 60%);
-            border-color:rgba(250,204,21,0.4);
+        .podium-card.rank-1{
+            background:linear-gradient(180deg, rgba(250,204,21,0.16), #f8fafc 70%);
+            border-color:rgba(250,204,21,0.45);
+            padding-top:26px;
+            animation:podiumIn 0.5s ease forwards, goldPulse 2.4s ease-in-out 0.6s infinite;
         }
 
-        .leaderboard-item.rank-2{
-            background:linear-gradient(90deg, rgba(148,163,184,0.14), #f8fafc 60%);
-            border-color:rgba(148,163,184,0.4);
+        .podium-card.rank-2{
+            background:linear-gradient(180deg, rgba(148,163,184,0.18), #f8fafc 70%);
+            border-color:rgba(148,163,184,0.45);
         }
 
-        .leaderboard-item.rank-3{
-            background:linear-gradient(90deg, rgba(217,119,6,0.12), #f8fafc 60%);
-            border-color:rgba(217,119,6,0.35);
+        .podium-card.rank-3{
+            background:linear-gradient(180deg, rgba(217,119,6,0.14), #f8fafc 70%);
+            border-color:rgba(217,119,6,0.4);
         }
 
-        .rank-badge{
-            min-width:32px;
-            height:32px;
+        .podium-rank-icon{
+            font-size:20px;
+            color:#94a3b8;
+            margin-bottom:6px;
+        }
+
+        .rank-1 .podium-rank-icon{
+            font-size:26px;
+            color:#facc15;
+            animation:crownFloat 2.2s ease-in-out infinite;
+        }
+
+        .rank-2 .podium-rank-icon{ color:#94a3b8; }
+        .rank-3 .podium-rank-icon{ color:#d97706; }
+
+        .podium-avatar-wrap{
+            position:relative;
+            margin-bottom:10px;
+        }
+
+        .podium-avatar{
+            width:56px;
+            height:56px;
+            border-radius:50%;
+            overflow:hidden;
+            border:3px solid #fff;
+            box-shadow:0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .rank-1 .podium-avatar{ width:68px; height:68px; border-color:#facc15; }
+        .rank-2 .podium-avatar{ border-color:#94a3b8; }
+        .rank-3 .podium-avatar{ border-color:#d97706; }
+
+        .podium-position{
+            position:absolute;
+            bottom:-4px;
+            right:-4px;
+            min-width:22px;
+            height:22px;
             border-radius:50%;
             display:flex;
             align-items:center;
             justify-content:center;
-            font-weight:700;
-            font-size:14px;
+            font-size:12px;
+            font-weight:800;
             color:#fff;
             background:#94a3b8;
+            border:2px solid #fff;
         }
 
-        .rank-1 .rank-badge{ background:#facc15; color:#78350f; }
-        .rank-2 .rank-badge{ background:#94a3b8; }
-        .rank-3 .rank-badge{ background:#d97706; }
+        .rank-1 .podium-position{ background:#facc15; color:#78350f; }
+        .rank-2 .podium-position{ background:#94a3b8; }
+        .rank-3 .podium-position{ background:#d97706; }
+
+        .podium-name{
+            font-size:14px;
+            font-weight:700;
+            color:#0f172a;
+            text-transform:capitalize;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            max-width:100%;
+        }
+
+        .podium-role{
+            font-size:11px;
+            color:var(--slate);
+            text-transform:capitalize;
+            margin-bottom:8px;
+        }
+
+        .podium-time{
+            font-size:12px;
+            font-weight:700;
+            color:#2563eb;
+            background:rgba(37,99,235,0.08);
+            padding:4px 10px;
+            border-radius:20px;
+            white-space:nowrap;
+        }
+
+        @media(max-width:600px){
+            .podium-row{
+                grid-template-columns:1fr;
+            }
+        }
 
         .leaderboard-avatar{
             width:40px;

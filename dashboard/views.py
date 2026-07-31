@@ -207,6 +207,20 @@ def home_dashboard(request):
         'employee__employee_profile__admin_data'
     ).order_by('check_in')[:3]
 
+    # Everyone else who has checked in today (rank 4+ within the
+    # cutoff, plus anyone who checked in after 9:30) — shown separately
+    # from the top-3 podium.
+    other_attendance = Attendance.objects.filter(
+        date=today,
+        check_in__isnull=False
+    ).exclude(
+        id__in=[a.id for a in leaderboard]
+    ).select_related(
+        'employee',
+        'employee__employee_profile',
+        'employee__employee_profile__admin_data'
+    ).order_by('check_in')
+
     # Absent = either has a record with Absent/Leave status today,
     # OR has no record at all today
     # We handle both cases by querying all employees then excluding present ones
@@ -300,6 +314,7 @@ def home_dashboard(request):
 
     # LEADERBOARD
     "leaderboard": leaderboard,
+    "other_attendance": other_attendance,
     
     # UNSEEN COUNT FOR GRAVIENCE
     'unseen_count': unseen_count,
