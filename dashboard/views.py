@@ -197,7 +197,7 @@ def home_dashboard(request):
     # queried in — no separate "late" bookkeeping needed.
     LEADERBOARD_CUTOFF = dt_time(9, 30)
 
-    leaderboard = Attendance.objects.filter(
+    leaderboard = list(Attendance.objects.filter(
         date=today,
         check_in__isnull=False,
         check_in__lte=LEADERBOARD_CUTOFF
@@ -205,7 +205,7 @@ def home_dashboard(request):
         'employee',
         'employee__employee_profile',
         'employee__employee_profile__admin_data'
-    ).order_by('check_in')[:3]
+    ).order_by('check_in')[:3])
 
     # Everyone else who has checked in today (rank 4+ within the
     # cutoff, plus anyone who checked in after 9:30) — shown separately
