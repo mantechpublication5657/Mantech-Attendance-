@@ -1128,8 +1128,8 @@
                                         {% comment %} {{ record.employee.first_name|slice:":1"|upper }} {% endcomment %}
                                         <!-- PROFILE IMAGE -->
                                         <div class="employee-avatar">
-                                            {% if record.employee.employee_profile.profile_picture %}
-                                            <img src="{{ record.employee.employee_profile.profile_picture.url }}" alt="{{ record.employee.username }}">  
+                                            {% if record.employee.employee_profile.get_profile_picture_url %}
+                                            <img src="{{ record.employee.employee_profile.get_profile_picture_url }}" alt="{{ record.employee.username }}">
                                             {% else %}
                                             <div class="employee-avatar-placeholder">
                                             <i class="fa-solid fa-user"></i>
@@ -1194,8 +1194,8 @@
                                         {% comment %} {{ emp.first_name|slice:":1"|upper }} {% endcomment %}
                                         <!-- PROFILE IMAGE -->
                                         <div class="employee-avatar">
-                                            {% if item.employee.employee_profile.profile_picture %}
-                                            <img src="{{ item.employee.employee_profile.profile_picture.url }}" alt="{{ item.employee.username }}">  
+                                            {% if emp.employee.employee_profile.get_profile_picture_url %}
+                                            <img src="{{ emp.employee.employee_profile.get_profile_picture_url }}" alt="{{ emp.employee.username }}">
                                             {% else %}
                                             <div class="employee-avatar-placeholder">
                                             <i class="fa-solid fa-user"></i>

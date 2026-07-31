@@ -90,8 +90,8 @@
             <div class="podium-slot slot-2">
                 <div class="podium-avatar-ring ring-2">
                     <div class="podium-avatar">
-                        {% if r2.employee.employee_profile.profile_picture %}
-                        <img src="{{ r2.employee.employee_profile.profile_picture.url }}" alt="{{ r2.employee.username }}">
+                        {% if r2.employee.employee_profile.get_profile_picture_url %}
+                        <img src="{{ r2.employee.employee_profile.get_profile_picture_url }}" alt="{{ r2.employee.username }}">
                         {% else %}
                         <div class="avatar-fallback fb-2">{{ r2.employee.first_name|default:r2.employee.username|slice:":1"|upper }}</div>
                         {% endif %}
@@ -110,8 +110,8 @@
                 <div class="podium-crown"><i class="bi bi-trophy-fill"></i></div>
                 <div class="podium-avatar-ring ring-1">
                     <div class="podium-avatar">
-                        {% if r1.employee.employee_profile.profile_picture %}
-                        <img src="{{ r1.employee.employee_profile.profile_picture.url }}" alt="{{ r1.employee.username }}">
+                        {% if r1.employee.employee_profile.get_profile_picture_url %}
+                        <img src="{{ r1.employee.employee_profile.get_profile_picture_url }}" alt="{{ r1.employee.username }}">
                         {% else %}
                         <div class="avatar-fallback fb-1">{{ r1.employee.first_name|default:r1.employee.username|slice:":1"|upper }}</div>
                         {% endif %}
@@ -129,8 +129,8 @@
             <div class="podium-slot slot-3">
                 <div class="podium-avatar-ring ring-3">
                     <div class="podium-avatar">
-                        {% if r3.employee.employee_profile.profile_picture %}
-                        <img src="{{ r3.employee.employee_profile.profile_picture.url }}" alt="{{ r3.employee.username }}">
+                        {% if r3.employee.employee_profile.get_profile_picture_url %}
+                        <img src="{{ r3.employee.employee_profile.get_profile_picture_url }}" alt="{{ r3.employee.username }}">
                         {% else %}
                         <div class="avatar-fallback fb-3">{{ r3.employee.first_name|default:r3.employee.username|slice:":1"|upper }}</div>
                         {% endif %}
@@ -193,8 +193,8 @@
                             <td>
                                 <div class="lb-row-emp">
                                     <div class="lb-row-avatar">
-                                        {% if row.employee.employee_profile.profile_picture %}
-                                        <img src="{{ row.employee.employee_profile.profile_picture.url }}" alt="{{ row.employee.username }}">
+                                        {% if row.employee.employee_profile.get_profile_picture_url %}
+                                        <img src="{{ row.employee.employee_profile.get_profile_picture_url }}" alt="{{ row.employee.username }}">
                                         {% else %}
                                         <div class="avatar-fallback fb-row">{{ row.employee.first_name|default:row.employee.username|slice:":1"|upper }}</div>
                                         {% endif %}

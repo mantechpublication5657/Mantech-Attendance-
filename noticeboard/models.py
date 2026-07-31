@@ -9,14 +9,19 @@ from django.utils import timezone
 
 class NoticeBoard(models.Model):
 
+    # Kept in sync with employees.models.DEPARTMENT_CHOICES so a notice's
+    # audience can be matched directly against an employee's department.
     NOTICE_TYPE_CHOICES = [
         ('all', 'All Employees'),
-        ('management', 'Management'),
-        ('hr', 'HR Department'),
-        ('accounts', 'Accounts Department'),
-        ('sales', 'Sales Department'),
-        ('editorial', 'Editorial Team'),
-        ('intern', 'Interns'),
+        ('hr', 'Human Resources'),
+        ('finance', 'Finance'),
+        ('it', 'Information Technology'),
+        ('sales', 'Sales'),
+        ('marketing', 'Marketing'),
+        ('operations', 'Operations'),
+        ('admin', 'Administration'),
+        ('accountant', 'Accountant'),
+        ('positive_vibes', 'Positive Vibes Department'),
     ]
 
     MESSAGE_TYPE_CHOICES = [

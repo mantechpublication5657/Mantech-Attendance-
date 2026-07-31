@@ -256,14 +256,18 @@ def check_in(request):
     # Current India Time
     current_time = localtime().time()
 
-    late_time = timezone.datetime.strptime(
-        "09:45",
-        "%H:%M"
-    ).time()
+    # 9:00-9:30 -> Present, 9:31-9:40 -> Late, 9:41 onward -> Half Day.
+    late_start = timezone.datetime.strptime("09:31", "%H:%M").time()
+    half_day_start = timezone.datetime.strptime("09:41", "%H:%M").time()
 
-    is_late = current_time > late_time
+    if current_time < late_start:
+        status = 'Present'
+    elif current_time < half_day_start:
+        status = 'Late'
+    else:
+        status = 'Half Day'
 
-    status = 'Late' if is_late else 'Present'
+    is_late = status != 'Present'
 
     ip = request.META.get('REMOTE_ADDR')
 

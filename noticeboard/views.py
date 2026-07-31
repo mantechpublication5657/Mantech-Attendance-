@@ -3,15 +3,35 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from .models import NoticeBoard
 from .forms import NoticeBoardForm
 from accounts.permissions import is_admin
 
 
+def visible_notices_for(user, base_qs=None):
+    """
+    Staff/admins see every notice (they manage the board). Everyone else
+    only sees notices targeted at 'All Employees' or at their own
+    department, matching notice_type against EmployeeProfile.department.
+    """
+    qs = base_qs if base_qs is not None else NoticeBoard.objects.all()
+
+    if user.is_staff or user.is_superuser:
+        return qs
+
+    department = getattr(getattr(user, 'employee_profile', None), 'department', None)
+
+    if department:
+        return qs.filter(Q(notice_type='all') | Q(notice_type=department))
+
+    return qs.filter(notice_type='all')
+
+
 @login_required
 def notice_dashboard(request):
 
-    notices = NoticeBoard.objects.all()
+    notices = visible_notices_for(request.user)
 
     form = NoticeBoardForm()
 

@@ -933,6 +933,9 @@ def employee_list(request):
     if query:
         employees_qs = employees_qs.filter(
             Q(user__username__icontains=query) |
+            Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query) |
+            Q(user__email__icontains=query) |
             Q(emp_id__icontains=query)
         )
 
@@ -1605,55 +1608,33 @@ def update_profile_picture(request):
     # ── Branch: avatar selection ───────────────────────────────────────────────
     elif update_type == "avatar":
         import os
+        from django.conf import settings
 
         avatar_name = request.POST.get("avatar_name", "").strip()
         avatar_name = os.path.basename(avatar_name)
         profile = request.user.employee_profile
-        
-        if not avatar_name:
+
+        if not avatar_name or avatar_name not in settings.AVATAR_FILENAMES:
             messages.error(request, "No avatar was selected. Please click one and try again.")
             return redirect("employee_detail", user_id=request.user.id)
- 
-        # ── IMPORTANT ──────────────────────────────────────────────────────────
-        # Your Profile model has no avatar_name field yet.
-        # You have two options:
-        #
-        # OPTION A (recommended): Add avatar_name to your Profile model
-        #   avatar_name = models.CharField(max_length=100, null=True, blank=True)
-        #   Then run: python manage.py makemigrations && python manage.py migrate
-        #
-        # OPTION B: Copy the avatar file into employee_photos/ and save it as
-        #   profile_picture so no model change is needed (handled below).
-        # ── OPTION B logic (no migration needed) ───────────────────────────────
-        from django.conf import settings
-        import shutil
-        from django.core.files import File
- 
-        avatar_source = os.path.join(
-            settings.STATICFILES_DIRS[0], "icons", avatar_name
-        )  # adjust path to where your avatar icons live
- 
-        if not os.path.isfile(avatar_source):
-            # Try BASE_DIR/static/icons/ as fallback
-            avatar_source = os.path.join(settings.BASE_DIR, "static", "icons", avatar_name)
- 
-        if not os.path.isfile(avatar_source):
-            messages.error(request, "Avatar file not found on the server.")
-            return redirect("employee_detail", user_id=request.user.id)
- 
-        # Delete old uploaded file
+
+        # Avatars are bundled static assets (static/icons/), not uploads —
+        # storing just the filename means selecting one never touches disk
+        # storage, so it survives redeploys the same way any other static
+        # file does (unlike ImageField uploads, which live on the ephemeral
+        # filesystem until Cloudinary is configured).
         if profile.profile_picture:
             try:
                 old_path = profile.profile_picture.path
                 if os.path.isfile(old_path):
                     os.remove(old_path)
             except Exception:
-                pass
- 
-        # Save avatar image into profile_picture (copies into employee_photos/)
-        with open(avatar_source, "rb") as f:
-            profile.profile_picture.save(avatar_name, File(f), save=True)
- 
+                pass  # storage backend may not expose .path (e.g. Cloudinary)
+            profile.profile_picture.delete(save=False)
+
+        profile.avatar_name = avatar_name
+        profile.save()
+
         messages.success(request, "Your avatar has been updated successfully.")
         return redirect("employee_detail", user_id=request.user.id)
 

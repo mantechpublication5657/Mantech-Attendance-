@@ -464,8 +464,8 @@
 
                 <!-- PROFILE IMAGE -->
                 <div class="employee-avatar">
-                    {% if employee.profile_picture %}
-                        <img src="{{ employee.profile_picture.url }}"
+                    {% if employee.get_profile_picture_url %}
+                        <img src="{{ employee.get_profile_picture_url }}"
                              alt="{{ employee.user.username }}">
                     {% else %}
                         <div class="employee-avatar-placeholder">

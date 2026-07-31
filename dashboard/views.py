@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import calendar
 import json
 from noticeboard.models import NoticeBoard
+from noticeboard.views import visible_notices_for
 from grievances.models import AdminNotification
 from accounts.models import User
 from accounts.permissions import is_admin
@@ -154,9 +155,11 @@ def home_dashboard(request):
     # NOTICEBOARD (USER ONLY)
     # =========================================
     
-    # Notice Board Data
-    notices = NoticeBoard.objects.filter(
-        is_active=True
+    # Notice Board Data — only notices targeted at this employee's
+    # department (or "All Employees"); staff/admins see every notice.
+    notices = visible_notices_for(
+        user,
+        NoticeBoard.objects.filter(is_active=True)
     ).order_by('-created_at')
     
     unseen_count = AdminNotification.objects.filter(

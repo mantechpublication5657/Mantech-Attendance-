@@ -170,14 +170,12 @@
         <div class="edit-header">
             <div class="profile-section d-flex align-items-center gap-3 flex-wrap">
 
-                {% if profile.profile_picture %}
-                    <img src="{{ profile.profile_picture.url }}" class="profile-image" id="previewImage">
-                {% elif not employee.user.employee_profile.profile_picture %}
+                {% if profile.get_profile_picture_url %}
+                    <img src="{{ profile.get_profile_picture_url }}" class="profile-image" id="previewImage">
+                {% else %}
                     <span class="avatar-placeholder" style="width:120px;height:120px;display:flex;align-items:center;justify-content:center;background-color:#e5e7eb;color:#6b7280;font-size:2rem;font-weight:bold;margin-bottom:15px;border-radius:50%;">
                         {{ employee.user.username|default:"A"|first|upper }}
                     </span>
-                {% else %}
-                    <img src="{% static 'images/default-user.png' %}" class="profile-image" id="previewImage">
                 {% endif %}
 
                 <div>
@@ -240,7 +238,7 @@
             <div class="form-section">
                 <h4 class="section-title">Profile Picture</h4>
                 <div class="upload-box text-center">
-                    <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}{% static 'images/default-user.png' %}{% endif %}" 
+                    <img src="{% if profile.get_profile_picture_url %}{{ profile.get_profile_picture_url }}{% else %}{% static 'images/default-user.png' %}{% endif %}"
                          class="profile-image mb-3" id="profilePreview">
                     <div class="mb-3">
                         {{ basic_form.profile_picture }}

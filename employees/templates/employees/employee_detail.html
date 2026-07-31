@@ -107,19 +107,15 @@
                      PROFILE PICTURE + CAMERA ICON
                 ============================================== -->
                 <div class="profile-picture-wrapper" id="profilePictureWrapper">
-                    {% if employee.profile_picture %}
-                        <img src="{{ employee.profile_picture.url }}"
+                    {% if employee.get_profile_picture_url %}
+                        <img src="{{ employee.get_profile_picture_url }}"
                              class="profile-image"
                              id="profilePreviewImg">
-                    {% elif not employee.user.employee_profile.profile_picture %}
+                    {% else %}
                         <div class="avatar-placeholder"
                              id="profileAvatarPlaceholder">
                             {{ employee.user.username|default:"A"|first|upper }}
                         </div>
-                    {% else %}
-                        <img src="{% static 'icons/default_avatar.png' %}"
-                             class="profile-image"
-                             id="profilePreviewImg">
                     {% endif %}
 
                     <!-- Camera Icon Overlay -->

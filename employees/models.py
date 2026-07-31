@@ -13,6 +13,8 @@ DEPARTMENT_CHOICES = (
     ('marketing', 'Marketing'),
     ('operations', 'Operations'),
     ('admin', 'Administration'),
+    ('accountant', 'Accountant'),
+    ('positive_vibes', 'Positive Vibes Department'),
 )
 
 # -----------------------------
@@ -58,7 +60,12 @@ class EmployeeProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def get_profile_picture_url(self):
-        return getattr(self.profile_picture, "url", None)
+        if self.profile_picture:
+            return self.profile_picture.url
+        if self.avatar_name:
+            from django.templatetags.static import static
+            return static(f'icons/{self.avatar_name}')
+        return None
 
     def __str__(self):
         return f"{self.emp_id or 'NoID'} - {self.user.username}"

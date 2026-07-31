@@ -233,8 +233,8 @@
 
             {# Photo #}
             <div class="id-card-photo">
-                {% if employee.profile_picture %}
-                    <img src="{{ employee.profile_picture.url }}" alt="Profile">
+                {% if employee.get_profile_picture_url %}
+                    <img src="{{ employee.get_profile_picture_url }}" alt="Profile">
                 {% else %}
                     {{ employee.user.username|default:"A"|first|upper }}
                 {% endif %}
