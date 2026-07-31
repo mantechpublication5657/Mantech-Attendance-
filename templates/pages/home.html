@@ -1561,6 +1561,26 @@
 
     </div>
 
+    <script>
+        (function(){
+            document.querySelectorAll('.podium-card').forEach(function(card){
+                card.addEventListener('mousemove', function(e){
+                    var rect = card.getBoundingClientRect();
+                    var px = (e.clientX - rect.left) / rect.width;
+                    var py = (e.clientY - rect.top) / rect.height;
+                    var rotateY = (px - 0.5) * 26;
+                    var rotateX = (0.5 - py) * 22;
+                    card.style.transform =
+                        'perspective(1200px) translateY(-8px) translateZ(20px) scale(1.05) ' +
+                        'rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
+                });
+                card.addEventListener('mouseleave', function(){
+                    card.style.transform = '';
+                });
+            });
+        })();
+    </script>
+
     <style>
 
         .other-attendance-list{
@@ -1604,27 +1624,34 @@
             gap:12px;
         }
 
-        /* Podium (Top 3) */
+        /* Podium (Top 3) — 3D */
 
         @keyframes podiumIn{
-            from{ opacity:0; transform:translateY(24px) scale(0.94); }
-            to{ opacity:1; transform:translateY(0) scale(1); }
+            from{
+                opacity:0;
+                transform:perspective(1200px) translateY(30px) translateZ(-120px) rotateX(-25deg) rotateY(-18deg) scale(0.9);
+            }
+            to{
+                opacity:1;
+                transform:perspective(1200px) translateY(0) translateZ(0) rotateX(0) rotateY(0) scale(1);
+            }
         }
 
         @keyframes crownFloat{
-            0%,100%{ transform:translateY(0) rotate(-6deg); }
-            50%{ transform:translateY(-5px) rotate(6deg); }
+            0%,100%{ transform:translateZ(30px) translateY(0) rotateY(-18deg) rotateX(4deg); }
+            50%{ transform:translateZ(38px) translateY(-6px) rotateY(18deg) rotateX(-4deg); }
         }
 
         @keyframes goldPulse{
-            0%,100%{ box-shadow:0 4px 18px rgba(250,204,21,0.25); }
-            50%{ box-shadow:0 4px 28px rgba(250,204,21,0.5); }
+            0%,100%{ box-shadow:0 14px 26px rgba(250,204,21,0.28), 0 2px 0 rgba(250,204,21,0.5); }
+            50%{ box-shadow:0 20px 38px rgba(250,204,21,0.5), 0 2px 0 rgba(250,204,21,0.7); }
         }
 
         .podium-row{
             display:grid;
             grid-template-columns:repeat(3, 1fr);
             gap:14px;
+            perspective:1200px;
         }
 
         .podium-card{
@@ -1637,8 +1664,11 @@
             background:#f8fafc;
             border:1px solid #eef2f7;
             opacity:0;
-            animation:podiumIn 0.5s ease forwards;
-            transition:transform 0.3s ease, box-shadow 0.3s ease;
+            animation:podiumIn 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
+            transition:transform 0.15s ease-out, box-shadow 0.3s ease;
+            transform-style:preserve-3d;
+            transform-origin:center bottom;
+            will-change:transform;
         }
 
         .podium-card:nth-child(1){ animation-delay:0.1s; }
@@ -1646,15 +1676,14 @@
         .podium-card:nth-child(3){ animation-delay:0.4s; }
 
         .podium-card:hover{
-            transform:translateY(-6px);
-            box-shadow:0 10px 24px rgba(0,0,0,0.08);
+            box-shadow:0 18px 30px rgba(0,0,0,0.12);
         }
 
         .podium-card.rank-1{
             background:linear-gradient(180deg, rgba(250,204,21,0.16), #f8fafc 70%);
             border-color:rgba(250,204,21,0.45);
             padding-top:26px;
-            animation:podiumIn 0.5s ease forwards, goldPulse 2.4s ease-in-out 0.6s infinite;
+            animation:podiumIn 0.6s cubic-bezier(0.22,1,0.36,1) forwards, goldPulse 2.4s ease-in-out 0.7s infinite;
         }
 
         .podium-card.rank-2{
@@ -1671,12 +1700,14 @@
             font-size:20px;
             color:#94a3b8;
             margin-bottom:6px;
+            transform:translateZ(18px);
         }
 
         .rank-1 .podium-rank-icon{
             font-size:26px;
             color:#facc15;
             animation:crownFloat 2.2s ease-in-out infinite;
+            filter:drop-shadow(0 6px 8px rgba(250,204,21,0.4));
         }
 
         .rank-2 .podium-rank-icon{ color:#94a3b8; }
@@ -1685,6 +1716,7 @@
         .podium-avatar-wrap{
             position:relative;
             margin-bottom:10px;
+            transform:translateZ(26px);
         }
 
         .podium-avatar{
@@ -1693,7 +1725,7 @@
             border-radius:50%;
             overflow:hidden;
             border:3px solid #fff;
-            box-shadow:0 2px 10px rgba(0,0,0,0.1);
+            box-shadow:0 6px 14px rgba(0,0,0,0.16);
         }
 
         .rank-1 .podium-avatar{ width:68px; height:68px; border-color:#facc15; }
@@ -1715,6 +1747,7 @@
             color:#fff;
             background:#94a3b8;
             border:2px solid #fff;
+            transform:translateZ(10px);
         }
 
         .rank-1 .podium-position{ background:#facc15; color:#78350f; }
