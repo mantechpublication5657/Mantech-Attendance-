@@ -1497,6 +1497,43 @@ def _allowed_file(filename: str) -> bool:
     )
 
 
+def _auto_orient_image(image_file):
+    """
+    Bake the EXIF orientation tag into the actual pixels (phone cameras
+    set this instead of rotating the image data), then strip it, so the
+    photo displays right-side-up everywhere instead of only in viewers
+    that respect EXIF orientation.
+    """
+    from PIL import Image, ImageOps
+    from io import BytesIO
+    from django.core.files.uploadedfile import InMemoryUploadedFile
+
+    try:
+        image_file.seek(0)
+        img = Image.open(image_file)
+        img = ImageOps.exif_transpose(img)
+
+        img_format = (img.format or "JPEG").upper()
+        if img_format == "JPEG" and img.mode in ("RGBA", "P"):
+            img = img.convert("RGB")
+
+        buffer = BytesIO()
+        img.save(buffer, format=img_format)
+        buffer.seek(0)
+
+        return InMemoryUploadedFile(
+            buffer,
+            field_name="profile_picture",
+            name=image_file.name,
+            content_type=image_file.content_type,
+            size=buffer.getbuffer().nbytes,
+            charset=None,
+        )
+    except Exception:
+        image_file.seek(0)
+        return image_file  # fall back to the original file untouched
+
+
 # ── View ───────────────────────────────────────────────────────────────────────
 
 @login_required
@@ -1537,6 +1574,12 @@ def update_profile_picture(request):
             )
             return redirect("employee_detail", user_id=request.user.id)
 
+
+        # Phone photos often carry an EXIF orientation tag instead of
+        # actually rotating the pixels — browsers ignore it when the
+        # image is later shown inside a fixed-size circle, so it comes
+        # out sideways. Bake the rotation into the pixels on upload.
+        image_file = _auto_orient_image(image_file)
 
         # Delete old uploaded file from disk before replacing
         profile = request.user.employee_profile        
