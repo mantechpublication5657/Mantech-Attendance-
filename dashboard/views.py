@@ -4,8 +4,9 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 
 from employees.models import EmployeeProfile
 from attendance.models import Attendance
-from datetime import datetime, timedelta, time as dt_time
+from datetime import datetime, timedelta
 import calendar
+import json
 from noticeboard.models import NoticeBoard
 from grievances.models import AdminNotification
 from accounts.models import User
@@ -188,39 +189,6 @@ def home_dashboard(request):
 
     present_employee_ids = present_records.values_list('employee_id', flat=True)
 
-    # =========================================
-    # ATTENDANCE LEADERBOARD (TOP 3 EARLIEST CHECK-INS)
-    # =========================================
-    # Only employees who checked in at/before the 9:30 cutoff qualify.
-    # Ranking is purely by check-in time, so a late arrival among the
-    # current top 3 naturally falls out as soon as someone earlier is
-    # queried in — no separate "late" bookkeeping needed.
-    LEADERBOARD_CUTOFF = dt_time(9, 30)
-
-    leaderboard = list(Attendance.objects.filter(
-        date=today,
-        check_in__isnull=False,
-        check_in__lte=LEADERBOARD_CUTOFF
-    ).select_related(
-        'employee',
-        'employee__employee_profile',
-        'employee__employee_profile__admin_data'
-    ).order_by('check_in')[:3])
-
-    # Everyone else who has checked in today (rank 4+ within the
-    # cutoff, plus anyone who checked in after 9:30) — shown separately
-    # from the top-3 podium.
-    other_attendance = Attendance.objects.filter(
-        date=today,
-        check_in__isnull=False
-    ).exclude(
-        id__in=[a.id for a in leaderboard]
-    ).select_related(
-        'employee',
-        'employee__employee_profile',
-        'employee__employee_profile__admin_data'
-    ).order_by('check_in')
-
     # Absent = either has a record with Absent/Leave status today,
     # OR has no record at all today
     # We handle both cases by querying all employees then excluding present ones
@@ -312,10 +280,6 @@ def home_dashboard(request):
     "notices": notices,
     "notices_count": notices.count(),
 
-    # LEADERBOARD
-    "leaderboard": leaderboard,
-    "other_attendance": other_attendance,
-    
     # UNSEEN COUNT FOR GRAVIENCE
     'unseen_count': unseen_count,
     
@@ -421,6 +385,204 @@ def attendance_today_list(request):
     }
     return render(request, 'dashboard/attendance_today_list.html', context)
 
+
+
+@login_required
+def leaderboard_page(request):
+    from datetime import date, time as dt_time
+    from collections import defaultdict
+
+    today = timezone.localdate()
+
+    try:
+        year = int(request.GET.get('year', today.year))
+        month = int(request.GET.get('month', today.month))
+    except (TypeError, ValueError):
+        year, month = today.year, today.month
+
+    days_in_month = calendar.monthrange(year, month)[1]
+    month_start = date(year, month, 1)
+    month_end = date(year, month, days_in_month)
+    effective_end = min(month_end, today)
+
+    if month == 1:
+        prev_year, prev_month = year - 1, 12
+    else:
+        prev_year, prev_month = year, month - 1
+    prev_days_in_month = calendar.monthrange(prev_year, prev_month)[1]
+    prev_start = date(prev_year, prev_month, 1)
+    prev_end = date(prev_year, prev_month, prev_days_in_month)
+
+    def working_days_between(start, end):
+        if end < start:
+            return 0
+        return sum(
+            1 for n in range((end - start).days + 1)
+            if (start + timedelta(days=n)).weekday() != 6  # Sunday off
+        )
+
+    working_days = working_days_between(month_start, effective_end)
+    prev_working_days = working_days_between(prev_start, prev_end)
+
+    employees = list(
+        User.objects.filter(employee_profile__isnull=False)
+        .select_related('employee_profile', 'employee_profile__admin_data')
+    )
+
+    all_records = Attendance.objects.filter(
+        employee__in=employees,
+        date__gte=prev_start,
+        date__lte=effective_end,
+    ).values('employee_id', 'date', 'status', 'check_in')
+
+    records_by_emp = defaultdict(dict)
+    for r in all_records:
+        records_by_emp[r['employee_id']][r['date']] = r['status']
+
+    STATUS_WEIGHT = {'Present': 1, 'Late': 1, 'Half Day': 0.5}
+
+    # =========================================
+    # LEADERBOARD SCORE (ranking metric)
+    # =========================================
+    # +10 for checking in at/before 9:30 AM, -10 for checking in after.
+    # Days with no check-in at all (absent) neither earn nor lose points —
+    # only actual check-in events are scored.
+    LEADERBOARD_CUTOFF = dt_time(9, 30)
+
+    points_by_emp = defaultdict(int)
+    for r in all_records:
+        if month_start <= r['date'] <= effective_end and r['check_in']:
+            points_by_emp[r['employee_id']] += 10 if r['check_in'] <= LEADERBOARD_CUTOFF else -10
+
+    def status_for(pct):
+        if pct >= 95:
+            return 'Excellent', 'excellent'
+        if pct >= 85:
+            return 'Good', 'good'
+        if pct >= 70:
+            return 'Average', 'average'
+        return 'Needs Improvement', 'poor'
+
+    rows = []
+    prev_percentages = []
+
+    for emp in employees:
+        emp_records = records_by_emp.get(emp.id, {})
+
+        present_days = sum(
+            STATUS_WEIGHT.get(status, 0)
+            for d, status in emp_records.items()
+            if month_start <= d <= effective_end
+        )
+        pct = round((present_days / working_days) * 100, 1) if working_days else 0
+
+        prev_present = sum(
+            STATUS_WEIGHT.get(status, 0)
+            for d, status in emp_records.items()
+            if prev_start <= d <= prev_end
+        )
+        prev_pct = round((prev_present / prev_working_days) * 100, 1) if prev_working_days else 0
+        prev_percentages.append(prev_pct)
+        emp_improvement = round(pct - prev_pct, 1)
+
+        # Streak: consecutive working days present, walking back from effective_end.
+        streak = 0
+        d = effective_end
+        while d >= month_start:
+            if d.weekday() == 6:
+                d -= timedelta(days=1)
+                continue
+            if emp_records.get(d) in ('Present', 'Late', 'Half Day'):
+                streak += 1
+                d -= timedelta(days=1)
+            else:
+                break
+
+        status_label, status_class = status_for(pct)
+
+        rows.append({
+            'employee': emp,
+            'present_days': present_days,
+            'total_days': working_days,
+            'percentage': pct,
+            'streak': streak,
+            'status_label': status_label,
+            'status_class': status_class,
+            'improvement': emp_improvement,
+            'points': points_by_emp.get(emp.id, 0),
+        })
+
+    # Ranked by leaderboard score (highest points first); attendance %
+    # and streak are only tiebreakers for equal scores.
+    rows.sort(key=lambda r: (-r['points'], -r['percentage'], -r['streak']))
+    for i, r in enumerate(rows, start=1):
+        r['rank'] = i
+
+    total_employees = len(rows)
+    avg_attendance = round(sum(r['percentage'] for r in rows) / total_employees, 1) if total_employees else 0
+    prev_avg_attendance = round(sum(prev_percentages) / total_employees, 1) if total_employees else 0
+    perfect_attendance = sum(1 for r in rows if r['percentage'] >= 100)
+    best_streak = max((r['streak'] for r in rows), default=0)
+    improvement = round(avg_attendance - prev_avg_attendance, 1)
+
+    # =========================================
+    # DAILY TREND (org-wide attendance % per working day this month)
+    # =========================================
+    daily_present = defaultdict(float)
+    for r in all_records:
+        if month_start <= r['date'] <= effective_end:
+            daily_present[r['date']] += STATUS_WEIGHT.get(r['status'], 0)
+
+    trend_labels = []
+    trend_values = []
+    d = month_start
+    while d <= effective_end:
+        if d.weekday() != 6:
+            trend_labels.append(d.strftime('%d %b'))
+            trend_values.append(
+                round((daily_present.get(d, 0) / total_employees) * 100, 1) if total_employees else 0
+            )
+        d += timedelta(days=1)
+
+    # =========================================
+    # ACHIEVEMENTS + RULE-BASED INSIGHT
+    # =========================================
+    most_improved = max(rows, key=lambda r: r['improvement'], default=None)
+    streak_leader = max(rows, key=lambda r: r['streak'], default=None)
+
+    if avg_attendance >= 90:
+        ai_insight = f"Team attendance is excellent this month at {avg_attendance}% — keep up the momentum!"
+    elif improvement > 0:
+        ai_insight = f"Attendance improved by {improvement}% compared to last month. Trending in the right direction."
+    elif improvement < 0:
+        ai_insight = f"Attendance dropped by {abs(improvement)}% compared to last month — worth checking in with the team."
+    else:
+        ai_insight = f"Attendance is steady at {avg_attendance}%, unchanged from last month."
+
+    context = {
+        'rows': rows,
+        'top3': rows[:3],
+        'rest': rows[3:],
+
+        'avg_attendance': avg_attendance,
+        'total_employees': total_employees,
+        'perfect_attendance': perfect_attendance,
+        'best_streak': best_streak,
+        'improvement': improvement,
+
+        'selected_month': month,
+        'selected_year': year,
+        'month_name': month_start.strftime('%B'),
+        'months': [(i, date(2000, i, 1).strftime('%B')) for i in range(1, 13)],
+        'years': range(today.year - 3, today.year + 1),
+
+        'trend_labels': json.dumps(trend_labels),
+        'trend_values': json.dumps(trend_values),
+        'most_improved': most_improved,
+        'streak_leader': streak_leader,
+        'ai_insight': ai_insight,
+    }
+    return render(request, 'pages/leaderboard.html', context)
 
 
 def custom_404(request, exception):

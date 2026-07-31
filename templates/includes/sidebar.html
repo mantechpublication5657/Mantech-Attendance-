@@ -113,6 +113,11 @@
                         {% endif %}
                     </a>
 
+                    <a href="{% url 'leaderboard_page' %}"
+                    class="nav-item {% if request.resolver_match.url_name == 'leaderboard_page' %}active{% endif %}">
+                    <i class="bi bi-trophy-fill"></i> Leaderboard
+                    </a>
+
             <!-- Manage Section -->
             {% if request.user.is_staff or request.user.is_superuser %}
             <div class="nav-section-label">Manage</div>
