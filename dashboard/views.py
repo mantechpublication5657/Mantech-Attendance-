@@ -447,13 +447,16 @@ def leaderboard_page(request):
     # +10 for checking in at/before 9:30 AM, -10 for checking in after.
     # Days with no check-in at all (absent) neither earn nor lose points —
     # only actual check-in events are scored.
-    LEADERBOARD_CUTOFF = dt_time(9, 30)
+    # Cutoff is exclusive of 9:31:00 (not just 9:30:00) so a check-in
+    # anywhere within the 9:30 minute (e.g. 9:30:45, which still shows
+    # as "9:30 AM") counts as on-time instead of being penalized.
+    LEADERBOARD_CUTOFF = dt_time(9, 31)
 
     points_by_emp = defaultdict(int)
     checkin_seconds_by_emp = defaultdict(list)
     for r in all_records:
         if month_start <= r['date'] <= effective_end and r['check_in']:
-            points_by_emp[r['employee_id']] += 10 if r['check_in'] <= LEADERBOARD_CUTOFF else -10
+            points_by_emp[r['employee_id']] += 10 if r['check_in'] < LEADERBOARD_CUTOFF else -10
             t = r['check_in']
             checkin_seconds_by_emp[r['employee_id']].append(t.hour * 3600 + t.minute * 60 + t.second)
 
