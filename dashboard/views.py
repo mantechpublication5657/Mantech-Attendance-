@@ -450,9 +450,21 @@ def leaderboard_page(request):
     LEADERBOARD_CUTOFF = dt_time(9, 30)
 
     points_by_emp = defaultdict(int)
+    checkin_seconds_by_emp = defaultdict(list)
     for r in all_records:
         if month_start <= r['date'] <= effective_end and r['check_in']:
             points_by_emp[r['employee_id']] += 10 if r['check_in'] <= LEADERBOARD_CUTOFF else -10
+            t = r['check_in']
+            checkin_seconds_by_emp[r['employee_id']].append(t.hour * 3600 + t.minute * 60 + t.second)
+
+    # Today's exact check-in time, independent of which month is being
+    # viewed (a past month's data wouldn't otherwise include today).
+    today_checkin_by_emp = {
+        r['employee_id']: r['check_in']
+        for r in Attendance.objects.filter(
+            employee__in=employees, date=today, check_in__isnull=False
+        ).values('employee_id', 'check_in')
+    }
 
     def status_for(pct):
         if pct >= 95:
@@ -500,6 +512,21 @@ def leaderboard_page(request):
 
         status_label, status_class = status_for(pct)
 
+        emp_checkin_seconds = checkin_seconds_by_emp.get(emp.id)
+        if emp_checkin_seconds:
+            avg_checkin_seconds = sum(emp_checkin_seconds) / len(emp_checkin_seconds)
+            avg_h, rem = divmod(int(avg_checkin_seconds), 3600)
+            avg_m = rem // 60
+            avg_checkin_display = dt_time(avg_h, avg_m).strftime('%I:%M %p').lstrip('0')
+        else:
+            avg_checkin_seconds = None
+            avg_checkin_display = '—'
+
+        today_checkin = today_checkin_by_emp.get(emp.id)
+        today_checkin_display = (
+            today_checkin.strftime('%I:%M %p').lstrip('0') if today_checkin else '—'
+        )
+
         rows.append({
             'employee': emp,
             'present_days': present_days,
@@ -510,11 +537,21 @@ def leaderboard_page(request):
             'status_class': status_class,
             'improvement': emp_improvement,
             'points': points_by_emp.get(emp.id, 0),
+            'avg_checkin_seconds': avg_checkin_seconds,
+            'avg_checkin_display': avg_checkin_display,
+            'today_checkin_display': today_checkin_display,
         })
 
-    # Ranked by leaderboard score (highest points first); attendance %
-    # and streak are only tiebreakers for equal scores.
-    rows.sort(key=lambda r: (-r['points'], -r['percentage'], -r['streak']))
+    # Ranked by leaderboard score first (highest points wins). Equal
+    # scores are broken by who actually checked in earlier on average —
+    # not by attendance % — since two people can both be "on time" but
+    # one consistently clocks in earlier (e.g. 9:28 vs 9:29).
+    rows.sort(key=lambda r: (
+        -r['points'],
+        r['avg_checkin_seconds'] if r['avg_checkin_seconds'] is not None else float('inf'),
+        -r['percentage'],
+        -r['streak'],
+    ))
     for i, r in enumerate(rows, start=1):
         r['rank'] = i
 

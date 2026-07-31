@@ -218,7 +218,11 @@
                                     <span class="lb-progress-pct">{{ row.percentage }}%</span>
                                 </div>
                             </td>
-                            <td class="lb-muted">{{ row.present_days }} / {{ row.total_days }}</td>
+                            <td class="lb-muted">
+                                {{ row.present_days }} / {{ row.total_days }}
+                                <div class="lb-avg-checkin"><i class="bi bi-clock-history"></i> avg {{ row.avg_checkin_display }}</div>
+                                <div class="lb-avg-checkin lb-today-checkin"><i class="bi bi-clock"></i> today {{ row.today_checkin_display }}</div>
+                            </td>
                             <td>
                                 <span class="lb-streak"><i class="bi bi-fire"></i> {{ row.streak }}</span>
                             </td>
@@ -911,6 +915,19 @@
         font-weight:800;
         font-size:13px;
         color:var(--lb-muted);
+    }
+
+    .lb-avg-checkin{
+        font-size:10.5px;
+        color:var(--lb-muted);
+        opacity:0.8;
+        margin-top:2px;
+    }
+
+    .lb-today-checkin{
+        color:var(--lb-blue);
+        opacity:1;
+        font-weight:600;
     }
 
     .lb-points.pos{ color:var(--lb-green); }
