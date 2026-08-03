@@ -113,5 +113,25 @@ class AdminControlledData(models.Model):
             user.is_staff = should_be_staff
             user.save(update_fields=['is_staff'])
 
+
+# -----------------------------
+# Media Blob (DB-backed file storage)
+# -----------------------------
+class MediaBlob(models.Model):
+    """
+    Backs DatabaseStorage (employees/storage.py). Uploaded files are
+    stored as rows here instead of on disk, so they survive redeploys
+    on hosts (like Render's free tier) whose filesystem is wiped on
+    every deploy — the database itself is the persistent part.
+    """
+    name = models.CharField(max_length=255, unique=True, db_index=True)
+    content = models.BinaryField()
+    content_type = models.CharField(max_length=100, default='application/octet-stream')
+    size = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
     def __str__(self):
         return f"{self.profile.emp_id} - {self.role} - {self.designation or 'No Designation'}"

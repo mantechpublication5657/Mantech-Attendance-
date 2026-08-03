@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
+from employees.views import serve_media_blob
 
 urlpatterns = [
     path('administration/', admin.site.urls),
@@ -30,6 +31,11 @@ urlpatterns = [
     path('leaves/', include('leaves.urls')),
     path('noticeboard/', include('noticeboard.urls')),
     path('', include('grievances.urls')),
+
+    # Serves files stored via DatabaseStorage (employees/storage.py) —
+    # used in production instead of /media/ when Cloudinary isn't
+    # configured, since uploads there live in the DB, not on disk.
+    path('media-db/<path:name>', serve_media_blob, name='serve_media_blob'),
 ]
 
 handler404 = 'dashboard.views.custom_404' 

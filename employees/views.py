@@ -1584,16 +1584,16 @@ def update_profile_picture(request):
         # out sideways. Bake the rotation into the pixels on upload.
         image_file = _auto_orient_image(image_file)
 
-        # Delete old uploaded file from disk before replacing
-        profile = request.user.employee_profile        
+        # Delete old uploaded file before replacing — storage-agnostic,
+        # so it works whether the old file lived on disk, Cloudinary, or
+        # in the database (DatabaseStorage).
+        profile = request.user.employee_profile
         if profile.profile_picture:
             try:
-                old_path = profile.profile_picture.path
-                if os.path.isfile(old_path):
-                    os.remove(old_path)
+                profile.profile_picture.delete(save=False)
             except Exception:
-                pass  # storage backend may not expose .path (e.g. S3)
- 
+                pass  # e.g. a transient Cloudinary API error shouldn't block the new upload
+
         profile.profile_picture = image_file
  
         # Clear avatar selection if you add avatar_name field later
@@ -1641,3 +1641,18 @@ def update_profile_picture(request):
     # ── Fallback: unknown update_type ─────────────────────────────────────────
     messages.error(request, "Invalid request. Please try again.")
     return redirect("employee_detail", user_id=request.user.id)
+
+
+# --------------------------------------------------
+# SERVE DB-BACKED MEDIA (DatabaseStorage, see employees/storage.py)
+# --------------------------------------------------
+from django.http import HttpResponse, Http404
+
+
+def serve_media_blob(request, name):
+    from .models import MediaBlob
+    try:
+        blob = MediaBlob.objects.get(name=name)
+    except MediaBlob.DoesNotExist:
+        raise Http404("File not found.")
+    return HttpResponse(bytes(blob.content), content_type=blob.content_type)

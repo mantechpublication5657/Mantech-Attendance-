@@ -238,8 +238,12 @@ CLOUDINARY_API_SECRET = config('CLOUDINARY_API_SECRET', default='')
 STORAGES = {
     "default": {
         "BACKEND": (
-            "cloudinary_storage.storage.MediaCloudinaryStorage"
-            if CLOUDINARY_CLOUD_NAME
+            "cloudinary_storage.storage.MediaCloudinaryStorage" if CLOUDINARY_CLOUD_NAME
+            # In production without Cloudinary, fall back to storing
+            # uploads as rows in the (already-persistent) database
+            # instead of the local disk, which Render's free tier wipes
+            # on every redeploy. Local dev keeps using plain disk storage.
+            else "employees.storage.DatabaseStorage" if not DEBUG
             else "django.core.files.storage.FileSystemStorage"
         ),
     },
@@ -285,7 +289,12 @@ AVATAR_LIST = AVATAR_FILENAMES
 # FOR MEDIA FILES
 MEDIA_URL  = '/media/'
 BASE_DIR = Path(__file__).resolve().parent.parent
-MEDIA_ROOT = BASE_DIR / 'media'
+
+# On Render, attach a persistent disk and point this at its mount path
+# (e.g. MEDIA_ROOT=/var/data/media) so uploaded files survive redeploys —
+# the default filesystem is wiped on every deploy, unlike a persistent
+# disk. Local dev is untouched when this env var isn't set.
+MEDIA_ROOT = Path(config('MEDIA_ROOT', default=str(BASE_DIR / 'media')))
 
 
 AUTH_USER_MODEL = 'accounts.User'
