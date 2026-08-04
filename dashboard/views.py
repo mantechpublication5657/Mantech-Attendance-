@@ -161,10 +161,15 @@ def home_dashboard(request):
         user,
         NoticeBoard.objects.filter(is_active=True)
     ).order_by('-created_at')
-    
+
     unseen_count = AdminNotification.objects.filter(
         is_seen=False
     ).count()
+
+    # =========================================
+    # TOP PERFORMERS (dashboard widget — same ranking as /leaderboard/)
+    # =========================================
+    top_performers = compute_leaderboard_data(current_year, current_month)['rows'][:3]
 
     # Add this alongside your existing present_days, absent_days etc.
     leave_remarks = {}
@@ -283,6 +288,9 @@ def home_dashboard(request):
     "notices": notices,
     "notices_count": notices.count(),
 
+    # TOP PERFORMERS WIDGET
+    "top_performers": top_performers,
+
     # UNSEEN COUNT FOR GRAVIENCE
     'unseen_count': unseen_count,
     
@@ -390,18 +398,16 @@ def attendance_today_list(request):
 
 
 
-@login_required
-def leaderboard_page(request):
+def compute_leaderboard_data(year, month):
+    """
+    Shared ranking computation used by both the full /leaderboard/ page
+    and the dashboard's compact "Top Performers" widget, so the two
+    never disagree about who's #1 for a given month.
+    """
     from datetime import date, time as dt_time
     from collections import defaultdict
 
     today = timezone.localdate()
-
-    try:
-        year = int(request.GET.get('year', today.year))
-        month = int(request.GET.get('month', today.month))
-    except (TypeError, ValueError):
-        year, month = today.year, today.month
 
     days_in_month = calendar.monthrange(year, month)[1]
     month_start = date(year, month, 1)
@@ -602,7 +608,7 @@ def leaderboard_page(request):
     else:
         ai_insight = f"Attendance is steady at {avg_attendance}%, unchanged from last month."
 
-    context = {
+    return {
         'rows': rows,
         'top3': rows[:3],
         'rest': rows[3:],
@@ -613,17 +619,36 @@ def leaderboard_page(request):
         'best_streak': best_streak,
         'improvement': improvement,
 
-        'selected_month': month,
-        'selected_year': year,
         'month_name': month_start.strftime('%B'),
-        'months': [(i, date(2000, i, 1).strftime('%B')) for i in range(1, 13)],
-        'years': range(today.year - 3, today.year + 1),
 
         'trend_labels': json.dumps(trend_labels),
         'trend_values': json.dumps(trend_values),
         'most_improved': most_improved,
         'streak_leader': streak_leader,
         'ai_insight': ai_insight,
+    }
+
+
+@login_required
+def leaderboard_page(request):
+    from datetime import date
+
+    today = timezone.localdate()
+
+    try:
+        year = int(request.GET.get('year', today.year))
+        month = int(request.GET.get('month', today.month))
+    except (TypeError, ValueError):
+        year, month = today.year, today.month
+
+    data = compute_leaderboard_data(year, month)
+
+    context = {
+        **data,
+        'selected_month': month,
+        'selected_year': year,
+        'months': [(i, date(2000, i, 1).strftime('%B')) for i in range(1, 13)],
+        'years': range(today.year - 3, today.year + 1),
     }
     return render(request, 'pages/leaderboard.html', context)
 

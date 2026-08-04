@@ -32,6 +32,7 @@
     <!-- KPI Cards -->
     <div class="lb-kpi-row">
 
+        
         <div class="lb-kpi-card">
             <div class="lb-kpi-icon blue"><i class="bi bi-graph-up-arrow"></i></div>
             <div class="lb-kpi-value" data-countup="{{ avg_attendance }}" data-suffix="%">0%</div>
@@ -68,105 +69,18 @@
 
     </div>
 
-    <!-- Podium Hero -->
-    <div class="lb-podium-panel">
-
-        <div class="podium-stage">
-
-            {% with r1=top3.0 r2=top3.1 r3=top3.2 %}
-
-            {% if r1 or r2 or r3 %}
-
-            <div class="confetti-field">
-                <span class="confetti"></span><span class="confetti"></span>
-                <span class="confetti"></span><span class="confetti"></span>
-                <span class="confetti"></span><span class="confetti"></span>
-                <span class="confetti"></span><span class="confetti"></span>
-                <span class="confetti"></span><span class="confetti"></span>
-                <span class="confetti"></span><span class="confetti"></span>
-            </div>
-
-            {% if r2 %}
-            <div class="podium-slot slot-2">
-                <div class="podium-avatar-ring ring-2">
-                    <div class="podium-avatar">
-                        {% if r2.employee.employee_profile.get_profile_picture_url %}
-                        <img src="{{ r2.employee.employee_profile.get_profile_picture_url }}" alt="{{ r2.employee.username }}">
-                        {% else %}
-                        <div class="avatar-fallback fb-2">{{ r2.employee.first_name|default:r2.employee.username|slice:":1"|upper }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="podium-ribbon ribbon-2">2</div>
-                <div class="podium-name">{{ r2.employee.first_name }} {{ r2.employee.last_name }}</div>
-                <div class="podium-pct pct-2">{% if r2.points > 0 %}+{% endif %}{{ r2.points }} pts</div>
-                <div class="podium-meta"><i class="bi bi-calendar-check"></i> {{ r2.present_days }} / {{ r2.total_days }} Days · {{ r2.percentage }}%</div>
-                <div class="podium-base base-2"></div>
-            </div>
-            {% endif %}
-
-            {% if r1 %}
-            <div class="podium-slot slot-1">
-                <div class="podium-crown"><i class="bi bi-trophy-fill"></i></div>
-                <div class="podium-avatar-ring ring-1">
-                    <div class="podium-avatar">
-                        {% if r1.employee.employee_profile.get_profile_picture_url %}
-                        <img src="{{ r1.employee.employee_profile.get_profile_picture_url }}" alt="{{ r1.employee.username }}">
-                        {% else %}
-                        <div class="avatar-fallback fb-1">{{ r1.employee.first_name|default:r1.employee.username|slice:":1"|upper }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="podium-ribbon ribbon-1">1</div>
-                <div class="podium-name">{{ r1.employee.first_name }} {{ r1.employee.last_name }}</div>
-                <div class="podium-pct pct-1">{% if r1.points > 0 %}+{% endif %}{{ r1.points }} pts</div>
-                <div class="podium-meta"><i class="bi bi-calendar-check"></i> {{ r1.present_days }} / {{ r1.total_days }} Days · {{ r1.percentage }}%</div>
-                <div class="podium-base base-1"></div>
-            </div>
-            {% endif %}
-
-            {% if r3 %}
-            <div class="podium-slot slot-3">
-                <div class="podium-avatar-ring ring-3">
-                    <div class="podium-avatar">
-                        {% if r3.employee.employee_profile.get_profile_picture_url %}
-                        <img src="{{ r3.employee.employee_profile.get_profile_picture_url }}" alt="{{ r3.employee.username }}">
-                        {% else %}
-                        <div class="avatar-fallback fb-3">{{ r3.employee.first_name|default:r3.employee.username|slice:":1"|upper }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="podium-ribbon ribbon-3">3</div>
-                <div class="podium-name">{{ r3.employee.first_name }} {{ r3.employee.last_name }}</div>
-                <div class="podium-pct pct-3">{% if r3.points > 0 %}+{% endif %}{{ r3.points }} pts</div>
-                <div class="podium-meta"><i class="bi bi-calendar-check"></i> {{ r3.present_days }} / {{ r3.total_days }} Days · {{ r3.percentage }}%</div>
-                <div class="podium-base base-3"></div>
-            </div>
-            {% endif %}
-
-            {% else %}
-
-            <div class="lb-empty">
-                <i class="bi bi-trophy"></i>
-                <p>No attendance data yet for {{ month_name }}.</p>
-            </div>
-
-            {% endif %}
-
-            {% endwith %}
-
-        </div>
-
-    </div>
-
     <!-- Main Grid: Table + Side Column -->
     <div class="lb-main-grid">
 
         <!-- Table -->
         <div class="lb-panel lb-table-panel">
 
-            <div class="lb-panel-head">
+            <div class="lb-panel-head lb-table-head">
                 <h3><i class="bi bi-list-ol"></i> Full Rankings</h3>
+                <div class="lb-table-search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="lbTableSearch" placeholder="Find an employee…" oninput="filterLbTable(this.value)">
+                </div>
             </div>
 
             <div class="lb-table-wrap">
@@ -184,7 +98,10 @@
                     </thead>
                     <tbody>
                         {% for row in rows %}
-                        <tr>
+                        <tr data-has-name="1" class="
+                            {% if row.rank == 1 %}row-gold{% elif row.rank == 2 %}row-silver{% elif row.rank == 3 %}row-bronze{% endif %}
+                            {% if row.employee.id == request.user.id %}lb-my-row{% endif %}
+                        ">
                             <td>
                                 <span class="lb-rank {% if row.rank == 1 %}gold{% elif row.rank == 2 %}silver{% elif row.rank == 3 %}bronze{% endif %}">
                                     {{ row.rank }}
@@ -200,7 +117,10 @@
                                         {% endif %}
                                     </div>
                                     <div>
-                                        <div class="lb-row-name">{{ row.employee.first_name }} {{ row.employee.last_name }}</div>
+                                        <div class="lb-row-name">
+                                            {{ row.employee.first_name }} {{ row.employee.last_name }}
+                                            {% if row.employee.id == request.user.id %}<span class="lb-you-badge">You</span>{% endif %}
+                                        </div>
                                         <div class="lb-row-role">{{ row.employee.employee_profile.admin_data.role|default:"Employee" }}</div>
                                     </div>
                                 </div>
@@ -284,6 +204,37 @@
                 </div>
             </div>
 
+            {% if top3 %}
+            <div class="lb-panel">
+                <div class="lb-panel-head">
+                    <h3><i class="bi bi-trophy-fill"></i> Top Performers</h3>
+                </div>
+                <div class="lb-top3-list">
+                    {% for row in top3 %}
+                    <div class="lb-top3-item">
+                        <div class="lb-top3-rank {% if row.rank == 1 %}gold{% elif row.rank == 2 %}silver{% else %}bronze{% endif %}">
+                            {{ row.rank }}
+                        </div>
+                        <div class="lb-top3-avatar">
+                            {% if row.employee.employee_profile.get_profile_picture_url %}
+                            <img src="{{ row.employee.employee_profile.get_profile_picture_url }}" alt="{{ row.employee.username }}">
+                            {% else %}
+                            <div class="avatar-fallback fb-row">{{ row.employee.first_name|default:row.employee.username|slice:":1"|upper }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="lb-top3-info">
+                            <div class="lb-top3-name">{{ row.employee.first_name }} {{ row.employee.last_name }}</div>
+                            <div class="lb-top3-sub">{{ row.percentage }}% · {{ row.streak }} day streak</div>
+                        </div>
+                        <div class="lb-top3-points {% if row.points > 0 %}pos{% elif row.points < 0 %}neg{% endif %}">
+                            {% if row.points > 0 %}+{% endif %}{{ row.points }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
             <div class="lb-panel">
                 <div class="lb-panel-head">
                     <h3><i class="bi bi-activity"></i> Attendance Trend</h3>
@@ -331,20 +282,9 @@
         });
     }, 150);
 
-    // 3D tilt on podium cards
-    document.querySelectorAll('.podium-slot').forEach(function(card){
-        card.addEventListener('mousemove', function(e){
-            var rect = card.getBoundingClientRect();
-            var px = (e.clientX - rect.left) / rect.width;
-            var py = (e.clientY - rect.top) / rect.height;
-            var rotateY = (px - 0.5) * 20;
-            var rotateX = (0.5 - py) * 16;
-            card.style.transform =
-                'translateY(-8px) scale(1.05) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
-        });
-        card.addEventListener('mouseleave', function(){
-            card.style.transform = '';
-        });
+    // Stagger the ranking table rows in on load
+    document.querySelectorAll('.lb-table tbody tr').forEach(function(tr, i){
+        tr.style.animationDelay = (i * 35) + 'ms';
     });
 
     // Trend chart
@@ -382,6 +322,14 @@
         });
     }
 })();
+
+function filterLbTable(query){
+    var q = query.trim().toLowerCase();
+    document.querySelectorAll('.lb-table tbody tr').forEach(function(tr){
+        if (!tr.dataset.hasName) return; // skip the "no records" row
+        tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
 </script>
 
 <style>
@@ -518,141 +466,6 @@
         margin-top:4px;
     }
 
-    /* Podium */
-
-    .lb-podium-panel{
-        background:var(--lb-panel);
-        border:1px solid var(--lb-border);
-        backdrop-filter:blur(14px);
-        border-radius:20px;
-        padding:10px;
-        margin-bottom:22px;
-    }
-
-    .podium-stage{
-        position:relative;
-        display:flex;
-        align-items:flex-end;
-        justify-content:center;
-        gap:18px;
-        padding:40px 10px 24px;
-        perspective:1000px;
-        min-height:260px;
-    }
-
-    .lb-empty{
-        text-align:center;
-        color:var(--lb-muted);
-        padding:40px 0;
-    }
-
-    .lb-empty i{ font-size:30px; color:var(--lb-gold); display:block; margin-bottom:8px; }
-
-    @keyframes podiumIn{
-        from{ opacity:0; transform:translateY(40px) scale(0.85); }
-        to{ opacity:1; transform:translateY(0) scale(1); }
-    }
-
-    @keyframes crownFloat{
-        0%,100%{ transform:translateY(0) rotate(-6deg); }
-        50%{ transform:translateY(-6px) rotate(6deg); }
-    }
-
-    @keyframes confettiFall{
-        0%{ transform:translateY(-16px) rotate(0deg); opacity:0; }
-        12%{ opacity:1; }
-        100%{ transform:translateY(230px) rotate(360deg); opacity:0; }
-    }
-
-    .confetti-field{
-        position:absolute;
-        inset:0;
-        overflow:hidden;
-        pointer-events:none;
-    }
-
-    .confetti{
-        position:absolute;
-        top:-16px;
-        width:7px;
-        height:12px;
-        border-radius:2px;
-        animation:confettiFall 4.5s linear infinite;
-    }
-
-    .confetti:nth-child(1){ left:4%;  background:var(--lb-gold);   animation-delay:0s;    }
-    .confetti:nth-child(2){ left:13%; background:var(--lb-blue);   animation-delay:0.6s;  }
-    .confetti:nth-child(3){ left:22%; background:#f472b6;          animation-delay:1.2s;  }
-    .confetti:nth-child(4){ left:31%; background:var(--lb-purple); animation-delay:0.3s;  }
-    .confetti:nth-child(5){ left:40%; background:var(--lb-green);  animation-delay:1.8s;  }
-    .confetti:nth-child(6){ left:50%; background:#fb923c;          animation-delay:0.9s;  }
-    .confetti:nth-child(7){ left:60%; background:var(--lb-gold);   animation-delay:2.1s;  }
-    .confetti:nth-child(8){ left:69%; background:var(--lb-blue);   animation-delay:0.15s; }
-    .confetti:nth-child(9){ left:78%; background:#f472b6;          animation-delay:1.5s;  }
-    .confetti:nth-child(10){left:87%; background:var(--lb-purple); animation-delay:0.75s; }
-    .confetti:nth-child(11){left:95%; background:var(--lb-green);  animation-delay:2.4s;  }
-    .confetti:nth-child(12){left:46%; background:#fb923c;          animation-delay:1.05s; }
-
-    .podium-slot{
-        position:relative;
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        width:130px;
-        opacity:0;
-        animation:podiumIn 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
-        transition:transform 0.2s ease-out;
-    }
-
-    .slot-2{ animation-delay:0.15s; }
-    .slot-1{ animation-delay:0.35s; width:150px; z-index:2; }
-    .slot-3{ animation-delay:0.55s; }
-
-    .podium-crown{
-        font-size:26px;
-        color:var(--lb-gold);
-        margin-bottom:2px;
-        filter:drop-shadow(0 6px 10px rgba(250,204,21,0.55));
-        animation:crownFloat 2.2s ease-in-out infinite;
-    }
-
-    .podium-avatar-ring{
-        position:relative;
-        width:100px;
-        height:100px;
-        border-radius:50%;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        margin-bottom:10px;
-        background:var(--ring-color);
-    }
-
-    .ring-1{ --ring-color: var(--lb-gold);  width:128px; height:128px; box-shadow:0 0 34px rgba(250,204,21,0.55); }
-    .ring-2{ --ring-color: var(--lb-blue);  box-shadow:0 0 26px rgba(56,189,248,0.5); }
-    .ring-3{ --ring-color: #fb923c;         box-shadow:0 0 26px rgba(251,146,60,0.5); }
-
-    @keyframes avatarFloat{
-        0%,100%{ transform:translateY(0); }
-        50%{ transform:translateY(-4px); }
-    }
-
-    .podium-avatar{
-        width:calc(100% - 12px);
-        height:calc(100% - 12px);
-        border-radius:50%;
-        overflow:hidden;
-        border:4px solid var(--lb-bg2);
-        background:var(--lb-bg2);
-        animation:avatarFloat 2.8s ease-in-out infinite;
-    }
-
-    .podium-avatar img{
-        width:100%;
-        height:100%;
-        object-fit:cover;
-    }
-
     .avatar-fallback{
         width:100%;
         height:100%;
@@ -664,99 +477,7 @@
         color:#0b1020;
     }
 
-    .fb-1{ background:linear-gradient(135deg, var(--lb-gold), #fbbf24); font-size:40px; }
-    .fb-2{ background:linear-gradient(135deg, var(--lb-blue), #0ea5e9); color:#04121c; }
-    .fb-3{ background:linear-gradient(135deg, #fb923c, #f97316); color:#2a1103; }
     .fb-row{ background:linear-gradient(135deg, var(--lb-purple), #818cf8); color:#150e33; font-size:14px; }
-
-    .podium-ribbon{
-        position:relative;
-        min-width:26px;
-        height:26px;
-        padding:0 4px;
-        border-radius:50%;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:13px;
-        font-weight:800;
-        color:#0b1020;
-        margin-top:-14px;
-        margin-bottom:6px;
-        border:2px solid var(--lb-bg2);
-        z-index:1;
-    }
-
-    .podium-ribbon::before,
-    .podium-ribbon::after{
-        content:"";
-        position:absolute;
-        top:16px;
-        width:0;
-        height:0;
-        border-style:solid;
-    }
-
-    .podium-ribbon::before{ left:-6px; border-width:8px 7px 0 0; }
-    .podium-ribbon::after{ right:-6px; border-width:8px 0 0 7px; }
-
-    .ribbon-1{ background:var(--lb-gold); }
-    .ribbon-1::before, .ribbon-1::after{ border-color:#ca8a04 transparent transparent transparent; }
-
-    .ribbon-2{ background:var(--lb-blue); }
-    .ribbon-2::before, .ribbon-2::after{ border-color:#0284c7 transparent transparent transparent; }
-
-    .ribbon-3{ background:#fb923c; }
-    .ribbon-3::before, .ribbon-3::after{ border-color:#c2410c transparent transparent transparent; }
-
-    .podium-name{
-        font-size:13px;
-        font-weight:700;
-        color:var(--lb-text);
-        text-transform:capitalize;
-        text-align:center;
-        max-width:100%;
-        white-space:nowrap;
-        overflow:hidden;
-        text-overflow:ellipsis;
-    }
-
-    .podium-pct{
-        font-size:16px;
-        font-weight:800;
-        margin-top:2px;
-    }
-
-    .pct-1{ color:var(--lb-gold); font-size:19px; }
-    .pct-2{ color:var(--lb-blue); }
-    .pct-3{ color:#fb923c; }
-
-    .podium-meta{
-        font-size:10.5px;
-        color:var(--lb-muted);
-        margin-top:2px;
-        margin-bottom:8px;
-        white-space:nowrap;
-    }
-
-    .podium-base{
-        position:relative;
-        width:100%;
-        border-radius:50% 50% 8px 8px / 20px 20px 8px 8px;
-        overflow:hidden;
-    }
-
-    .podium-base::before{
-        content:"";
-        position:absolute;
-        top:0; left:0; right:0;
-        height:45%;
-        background:linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0));
-    }
-
-    .base-1{ height:64px; background:linear-gradient(180deg,#fde68a,var(--lb-gold)); box-shadow:0 0 34px rgba(250,204,21,0.5); }
-    .base-2{ height:46px; background:linear-gradient(180deg,#bae6fd,var(--lb-blue)); box-shadow:0 0 26px rgba(56,189,248,0.45); }
-    .base-3{ height:36px; background:linear-gradient(180deg,#fed7aa,#fb923c); box-shadow:0 0 26px rgba(251,146,60,0.45); }
 
     /* Main Grid */
 
@@ -791,6 +512,45 @@
 
     .lb-panel-head h3 i{ color:var(--lb-blue); }
 
+    .lb-table-head{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:14px;
+        flex-wrap:wrap;
+    }
+
+    .lb-table-search{
+        position:relative;
+        display:flex;
+        align-items:center;
+    }
+
+    .lb-table-search i{
+        position:absolute;
+        left:12px;
+        color:var(--lb-muted);
+        font-size:12px;
+        pointer-events:none;
+    }
+
+    .lb-table-search input{
+        border:1px solid var(--lb-border);
+        background:rgba(255,255,255,0.6);
+        border-radius:10px;
+        padding:7px 12px 7px 30px;
+        font-size:12.5px;
+        color:var(--lb-text);
+        min-width:180px;
+        outline:none;
+        transition:0.2s ease;
+    }
+
+    .lb-table-search input:focus{
+        border-color:rgba(2,132,199,0.4);
+        box-shadow:0 0 0 3px rgba(2,132,199,0.1);
+    }
+
     .lb-table-panel{ margin-bottom:0; }
 
     .lb-table-wrap{
@@ -820,12 +580,41 @@
         vertical-align:middle;
     }
 
+    @keyframes rowIn{
+        from{ opacity:0; transform:translateX(-10px); }
+        to{ opacity:1; transform:translateX(0); }
+    }
+
     .lb-table tbody tr{
-        transition:0.2s ease;
+        transition:background 0.2s ease;
+        border-left:3px solid transparent;
+        opacity:0;
+        animation:rowIn 0.4s ease forwards;
     }
 
     .lb-table tbody tr:hover{
         background:rgba(15,23,42,0.03);
+    }
+
+    .lb-table tbody tr.row-gold{ border-left-color:var(--lb-gold); background:rgba(250,204,21,0.05); }
+    .lb-table tbody tr.row-silver{ border-left-color:var(--lb-blue); background:rgba(56,189,248,0.05); }
+    .lb-table tbody tr.row-bronze{ border-left-color:#fb923c; background:rgba(251,146,60,0.05); }
+
+    .lb-table tbody tr.lb-my-row{
+        background:rgba(124,58,237,0.07) !important;
+        border-left-color:var(--lb-purple);
+    }
+
+    .lb-you-badge{
+        display:inline-block;
+        margin-left:6px;
+        padding:1px 8px;
+        border-radius:20px;
+        font-size:10px;
+        font-weight:800;
+        color:#fff;
+        background:var(--lb-purple);
+        vertical-align:middle;
     }
 
     .lb-rank{
@@ -1002,6 +791,77 @@
         text-transform:capitalize;
     }
 
+    .lb-top3-list{
+        padding:12px 18px 16px;
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+    }
+
+    .lb-top3-item{
+        display:flex;
+        align-items:center;
+        gap:10px;
+    }
+
+    .lb-top3-rank{
+        min-width:22px;
+        height:22px;
+        border-radius:50%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:11px;
+        font-weight:800;
+        color:#fff;
+        background:var(--lb-muted);
+        flex-shrink:0;
+    }
+
+    .lb-top3-rank.gold{ background:var(--lb-gold); }
+    .lb-top3-rank.silver{ background:var(--lb-blue); }
+    .lb-top3-rank.bronze{ background:#fb923c; }
+
+    .lb-top3-avatar{
+        width:32px;
+        height:32px;
+        border-radius:50%;
+        overflow:hidden;
+        flex-shrink:0;
+    }
+
+    .lb-top3-avatar img{ width:100%; height:100%; object-fit:cover; }
+
+    .lb-top3-info{
+        flex:1;
+        min-width:0;
+    }
+
+    .lb-top3-name{
+        font-size:12.5px;
+        font-weight:700;
+        color:var(--lb-text);
+        text-transform:capitalize;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+    }
+
+    .lb-top3-sub{
+        font-size:10.5px;
+        color:var(--lb-muted);
+    }
+
+    .lb-top3-points{
+        font-size:12.5px;
+        font-weight:800;
+        color:var(--lb-muted);
+        flex-shrink:0;
+    }
+
+    .lb-top3-points.pos{ color:var(--lb-green); }
+    .lb-top3-points.neg{ color:var(--lb-red); }
+
     .lb-chart-wrap{
         padding:14px 18px 18px;
     }
@@ -1012,9 +872,6 @@
     }
 
     @media(max-width:600px){
-        .podium-stage{ flex-wrap:wrap; gap:10px; }
-        .podium-slot{ width:100px; }
-        .slot-1{ width:112px; order:-1; }
         .lb-kpi-row{ grid-template-columns:1fr 1fr; }
     }
 

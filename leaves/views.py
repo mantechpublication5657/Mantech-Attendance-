@@ -5,7 +5,7 @@ from django.contrib import messages
 from payroll.views import User
 from accounts.permissions import is_admin
 
-from attendance.models import Attendance
+from attendance.models import Attendance, AttendanceLog
 from employees.models import EmployeeProfile
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q
@@ -430,6 +430,13 @@ def mark_missing_attendance_absent(request, user_id):
                     check_in=None,
                     check_out=None,
                     remarks="Marked absent manually by admin"
+                )
+
+                AttendanceLog.objects.create(
+                    employee=employee.user,
+                    date=current_date,
+                    action="Auto Absent",
+                    notes="No check-in recorded — marked absent by admin action.",
                 )
 
             created_count += 1

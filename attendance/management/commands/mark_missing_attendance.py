@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from datetime import date, timedelta
-from attendance.models import Attendance
+from attendance.models import Attendance, AttendanceLog
 from employees.models import EmployeeProfile
 
 
@@ -50,12 +50,12 @@ class Command(BaseCommand):
         if start_date > today:
             self.stdout.write(
                 self.style.WARNING(
-                    f"Skipping — {month}/{year} is in the future."
+                    f"Skipping - {month}/{year} is in the future."
                 )
             )
             return
 
-        # IF SELECTED MONTH IS CURRENT MONTH → TILL YESTERDAY
+        # IF SELECTED MONTH IS CURRENT MONTH -> TILL YESTERDAY
         if month == today.month and year == today.year:
             end_date = today - timedelta(days=1)
 
@@ -80,7 +80,7 @@ class Command(BaseCommand):
             if not hasattr(profile, "admin_data"):
                 self.stdout.write(
                     self.style.WARNING(
-                        f"Skipped {profile.user.username} — no admin data"
+                        f"Skipped {profile.user.username} - no admin data"
                     )
                 )
                 total_skipped += 1
@@ -90,7 +90,7 @@ class Command(BaseCommand):
             if not profile.admin_data.joining_date:
                 self.stdout.write(
                     self.style.WARNING(
-                        f"Skipped {profile.user.username} — no joining date"
+                        f"Skipped {profile.user.username} - no joining date"
                     )
                 )
                 total_skipped += 1
@@ -131,6 +131,13 @@ class Command(BaseCommand):
                         status="Absent",      # adjust to match your model's field value
                     )
 
+                    AttendanceLog.objects.create(
+                        employee=profile.user,
+                        date=current_date,
+                        action="Auto Absent",
+                        notes="No check-in recorded - marked absent by mark_missing_attendance command.",
+                    )
+
                     employee_marked += 1
                     total_marked += 1
 
@@ -139,18 +146,18 @@ class Command(BaseCommand):
             if employee_marked > 0:
                 self.stdout.write(
                     self.style.SUCCESS(
-                        f"✔ {profile.user.username} — "
+                        f"[OK] {profile.user.username} - "
                         f"marked {employee_marked} days as Absent"
                     )
                 )
             else:
                 self.stdout.write(
-                    f"  {profile.user.username} — no missing attendance"
+                    f"  {profile.user.username} - no missing attendance"
                 )
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"\nDone — Total Marked: {total_marked} | "
+                f"\nDone - Total Marked: {total_marked} | "
                 f"Total Skipped: {total_skipped}\n"
             )
         )

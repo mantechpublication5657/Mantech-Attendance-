@@ -490,6 +490,255 @@
     </div>
     {% endif %}
 
+    <!-- Top Performers -->
+    {% if top_performers %}
+    <div class="panel" style="margin-bottom:20px;">
+
+        <div class="panel-head">
+            <h3>
+                <i class="bi bi-star-fill" style="color:var(--amber);margin-right:7px;"></i>
+                Top Performers
+            </h3>
+            <a href="{% url 'leaderboard_page' %}" style="font-size:12px;">
+                Full Leaderboard →
+            </a>
+        </div>
+
+        <div class="panel-body" style="padding-top:6px;">
+
+            <div class="tp-row">
+                {% for row in top_performers %}
+                <div class="tp-card tp-rank-{{ forloop.counter }}">
+
+                    <div class="tp-avatar-wrap">
+                        <div class="tp-avatar">
+                            {% if row.employee.employee_profile.get_profile_picture_url %}
+                            <img src="{{ row.employee.employee_profile.get_profile_picture_url }}" alt="{{ row.employee.username }}">
+                            {% else %}
+                            <div class="tp-avatar-fallback">{{ row.employee.first_name|default:row.employee.username|slice:":1"|upper }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="tp-badge">
+                            {% if forloop.counter == 1 %}<i class="bi bi-trophy-fill"></i>{% else %}{{ forloop.counter }}{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="tp-name">{{ row.employee.first_name }} {{ row.employee.last_name }}</div>
+                    <div class="tp-role">{{ row.employee.employee_profile.admin_data.role|default:"Employee" }}</div>
+
+                    <div class="tp-points {% if row.points > 0 %}pos{% elif row.points < 0 %}neg{% endif %}">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                        {% if row.points > 0 %}+{% endif %}{{ row.points }} pts
+                    </div>
+
+                    <div class="tp-progress-wrap">
+                        <div class="tp-progress-bg">
+                            <div class="tp-progress-fill" style="width:{{ row.percentage }}%;"></div>
+                        </div>
+                        <span class="tp-progress-pct">{{ row.percentage }}%</span>
+                    </div>
+
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+
+    </div>
+
+    <style>
+
+        @keyframes tpCardIn{
+            from{ opacity:0; transform:translateY(14px); }
+            to{ opacity:1; transform:translateY(0); }
+        }
+
+        .tp-row{
+            display:grid;
+            grid-template-columns:repeat(3, 1fr);
+            gap:14px;
+        }
+
+        .tp-card{
+            position:relative;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            text-align:center;
+            padding:22px 16px 18px;
+            border-radius:18px;
+            background:#f8fafc;
+            border:1px solid #eef2f7;
+            overflow:hidden;
+            opacity:0;
+            animation:tpCardIn 0.45s ease forwards;
+            transition:transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .tp-card::before{
+            content:"";
+            position:absolute;
+            top:0; left:0; right:0;
+            height:4px;
+            background:var(--slate);
+        }
+
+        .tp-card:nth-child(1){ animation-delay:0.05s; }
+        .tp-card:nth-child(2){ animation-delay:0.15s; }
+        .tp-card:nth-child(3){ animation-delay:0.25s; }
+
+        .tp-card:hover{
+            transform:translateY(-5px);
+            box-shadow:0 14px 26px rgba(0,0,0,0.09);
+        }
+
+        .tp-rank-1{
+            background:linear-gradient(160deg, rgba(250,204,21,0.16), #f8fafc 65%);
+            border-color:rgba(250,204,21,0.45);
+            transform:translateY(-6px);
+        }
+        .tp-rank-1:hover{ transform:translateY(-10px); }
+        .tp-rank-2{ background:linear-gradient(160deg, rgba(148,163,184,0.16), #f8fafc 65%); border-color:rgba(148,163,184,0.4); }
+        .tp-rank-3{ background:linear-gradient(160deg, rgba(217,119,6,0.12), #f8fafc 65%); border-color:rgba(217,119,6,0.35); }
+
+        .tp-rank-1::before{ background:linear-gradient(90deg,#facc15,#fbbf24); height:5px; }
+        .tp-rank-2::before{ background:linear-gradient(90deg,#94a3b8,#cbd5e1); }
+        .tp-rank-3::before{ background:linear-gradient(90deg,#d97706,#fb923c); }
+
+        .tp-avatar-wrap{
+            position:relative;
+            margin-bottom:10px;
+        }
+
+        .tp-avatar{
+            width:58px;
+            height:58px;
+            border-radius:50%;
+            overflow:hidden;
+            border:3px solid #fff;
+            box-shadow:0 3px 10px rgba(0,0,0,0.12);
+        }
+
+        .tp-rank-1 .tp-avatar{ width:72px; height:72px; border-color:#fde68a; box-shadow:0 4px 16px rgba(250,204,21,0.35); }
+        .tp-rank-2 .tp-avatar{ border-color:#e2e8f0; box-shadow:0 4px 14px rgba(148,163,184,0.3); }
+        .tp-rank-3 .tp-avatar{ border-color:#fed7aa; box-shadow:0 4px 14px rgba(217,119,6,0.28); }
+
+        .tp-avatar img{ width:100%; height:100%; object-fit:cover; }
+
+        .tp-avatar-fallback{
+            width:100%;
+            height:100%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:800;
+            font-size:20px;
+            color:#fff;
+            background:linear-gradient(135deg,#7c3aed,#818cf8);
+        }
+
+        .tp-badge{
+            position:absolute;
+            bottom:-2px;
+            right:-2px;
+            min-width:22px;
+            height:22px;
+            padding:0 4px;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:11px;
+            font-weight:800;
+            color:#fff;
+            background:var(--slate);
+            border:2px solid #fff;
+        }
+
+        .tp-rank-1 .tp-badge{ background:#f59e0b; font-size:11px; }
+        .tp-rank-2 .tp-badge{ background:#94a3b8; }
+        .tp-rank-3 .tp-badge{ background:#d97706; }
+
+        .tp-name{
+            font-size:14px;
+            font-weight:700;
+            color:#0f172a;
+            text-transform:capitalize;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            max-width:100%;
+        }
+
+        .tp-rank-1 .tp-name{ font-size:15px; }
+
+        .tp-role{
+            font-size:11px;
+            color:var(--slate);
+            text-transform:capitalize;
+            margin-bottom:10px;
+        }
+
+        .tp-points{
+            display:inline-flex;
+            align-items:center;
+            gap:5px;
+            font-size:13px;
+            font-weight:800;
+            color:var(--slate);
+            padding:4px 12px;
+            border-radius:20px;
+            background:rgba(100,116,139,0.1);
+            margin-bottom:12px;
+        }
+
+        .tp-points i{ font-size:11px; }
+
+        .tp-points.pos{ color:#059669; background:rgba(5,150,105,0.1); }
+        .tp-points.neg{ color:#dc2626; background:rgba(220,38,38,0.1); }
+
+        .tp-progress-wrap{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            width:100%;
+        }
+
+        .tp-progress-bg{
+            flex:1;
+            height:6px;
+            border-radius:10px;
+            background:rgba(15,23,42,0.08);
+            overflow:hidden;
+        }
+
+        .tp-progress-fill{
+            height:100%;
+            border-radius:10px;
+            background:linear-gradient(90deg, var(--blue), var(--purple));
+            transition:width 0.8s ease;
+        }
+
+        .tp-rank-1 .tp-progress-fill{ background:linear-gradient(90deg,#f59e0b,#facc15); }
+        .tp-rank-2 .tp-progress-fill{ background:linear-gradient(90deg,#64748b,#94a3b8); }
+        .tp-rank-3 .tp-progress-fill{ background:linear-gradient(90deg,#c2410c,#d97706); }
+
+        .tp-progress-pct{
+            font-size:11px;
+            font-weight:700;
+            color:var(--slate);
+            min-width:30px;
+        }
+
+        @media(max-width:600px){
+            .tp-row{ grid-template-columns:1fr; }
+            .tp-rank-1{ transform:none; }
+            .tp-rank-1:hover{ transform:translateY(-5px); }
+        }
+
+    </style>
+    {% endif %}
+
     <!-- End of Calander -->
     <!-- ── CHART + CALENDAR ── -->
 
@@ -1133,7 +1382,7 @@
                                             {% else %}
                                             <div class="employee-avatar-placeholder">
                                             <i class="fa-solid fa-user"></i>
-                                            </div> 
+                                            </div>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -1199,7 +1448,7 @@
                                             {% else %}
                                             <div class="employee-avatar-placeholder">
                                             <i class="fa-solid fa-user"></i>
-                                            </div> 
+                                            </div>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -1236,7 +1485,7 @@
                 </table>
             </div>
         </div>
-        
+
         <!-- Right Side -->
         <div style="display:flex;flex-direction:column;gap:20px;">
 

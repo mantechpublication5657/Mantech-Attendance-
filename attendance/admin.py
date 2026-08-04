@@ -10,7 +10,7 @@ from .models import AttendanceLog
 class AttendanceAdmin(admin.ModelAdmin):
 
     list_display = (
-        'employee',
+        'employee_name',
         'date',
         'check_in',
         'check_out',
@@ -26,11 +26,24 @@ class AttendanceAdmin(admin.ModelAdmin):
 
     search_fields = (
         'employee__username',
+        'employee__first_name',
+        'employee__last_name',
+        'employee__email',
     )
-    
+
+    @admin.display(description='Employee', ordering='employee__first_name')
+    def employee_name(self, obj):
+        full_name = f"{obj.employee.first_name} {obj.employee.last_name}".strip()
+        return full_name or obj.employee.username
+
 
 @admin.register(AttendanceLog)
 class AttendanceLogAdmin(admin.ModelAdmin):
-    list_display = ("employee", "date", "action", "timestamp")
+    list_display = ("employee_name", "date", "action", "timestamp")
     list_filter = ("date", "action")
-    search_fields = ("employee__username", "notes")
+    search_fields = ("employee__username", "employee__first_name", "employee__last_name", "notes")
+
+    @admin.display(description='Employee', ordering='employee__first_name')
+    def employee_name(self, obj):
+        full_name = f"{obj.employee.first_name} {obj.employee.last_name}".strip()
+        return full_name or obj.employee.username
