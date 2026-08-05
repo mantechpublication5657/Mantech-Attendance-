@@ -520,6 +520,8 @@ body {
 .tag-leave   { background: #fffbeb; color: #d97706; }
 .tag-absent  { background: #fff1f2; color: #e11d48; }
 .tag-remote  { background: #eff6ff; color: #2563eb; }
+.tag-late     { background: #fffbeb; color: #b45309; }
+.tag-half-day { background: #fff7ed; color: #c2410c; }
 
 /* ─── UPCOMING EVENTS ───────────────────────────────── */
 .event-list { display: flex; flex-direction: column; gap: 12px; }

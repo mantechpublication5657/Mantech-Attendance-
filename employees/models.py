@@ -15,6 +15,7 @@ DEPARTMENT_CHOICES = (
     ('admin', 'Administration'),
     ('accountant', 'Accountant'),
     ('positive_vibes', 'Positive Vibes Department'),
+    ('computer_operator', 'Computer Operator'),
 )
 
 # -----------------------------

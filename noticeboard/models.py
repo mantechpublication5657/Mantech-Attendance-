@@ -22,6 +22,7 @@ class NoticeBoard(models.Model):
         ('admin', 'Administration'),
         ('accountant', 'Accountant'),
         ('positive_vibes', 'Positive Vibes Department'),
+        ('computer_operator', 'Computer Operator'),
     ]
 
     MESSAGE_TYPE_CHOICES = [

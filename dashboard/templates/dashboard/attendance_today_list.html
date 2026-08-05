@@ -357,6 +357,22 @@
   .tag-active   { background: #dcfce7; color: #16a34a; }
   .tag-inactive { background: #fee2e2; color: #dc2626; }
   .tag-pending  { background: #fef9c3; color: #ca8a04; }
+  .tag-late     { background: #fffbeb; color: #b45309; }
+
+  .row-half-day{ background: rgba(194,65,12,0.06); }
+  .row-half-day:hover{ background: rgba(194,65,12,0.1); }
+
+  .half-day-badge{
+    display:inline-block;
+    margin-left:6px;
+    padding:1px 8px;
+    border-radius:20px;
+    font-size:10px;
+    font-weight:800;
+    color:#fff;
+    background:#c2410c;
+    vertical-align:middle;
+  }
 
   /* ---------- Empty State ---------- */
   .empty-state {
@@ -533,6 +549,7 @@
       <option value="admin"      {% if request.GET.department == 'admin' %}selected{% endif %}>Administration</option>
       <option value="accountant"     {% if request.GET.department == 'accountant' %}selected{% endif %}>Accountant</option>
       <option value="positive_vibes" {% if request.GET.department == 'positive_vibes' %}selected{% endif %}>Positive Vibes Department</option>
+      <option value="computer_operator" {% if request.GET.department == 'computer_operator' %}selected{% endif %}>Computer Operator</option>
     </select>
     <button type="submit" class="btn-filter">
       <i class="bi bi-search"></i> Apply
@@ -583,7 +600,7 @@
         </thead>
         <tbody>
           {% for record in present_records %}
-          <tr class="searchable-row">
+          <tr class="searchable-row {% if record.status == 'Half Day' %}row-half-day{% endif %}">
             <td style="color:var(--slate);font-size:13px;">{{ forloop.counter }}</td>
             <td>
               <div class="emp-info">
@@ -596,13 +613,14 @@
                     {% else %}
                     <div class="employee-avatar-placeholder">
                       <i class="fa-solid fa-user"></i>
-                    </div> 
+                    </div>
                     {% endif %}
                   </div>
                 </div>
                 <div>
                   <div class="emp-name" style="text-transform:capitalize;">
                     {{ record.employee.first_name }} {{ record.employee.last_name }}
+                    {% if record.status == 'Half Day' %}<span class="half-day-badge">Half Day</span>{% endif %}
                   </div>
                   <div class="emp-role">{{ record.employee.employee_profile.emp_id|default:"—" }}</div>
                 </div>
@@ -642,9 +660,19 @@
               {% endif %}
             </td>
             <td>
+              {% if record.status == 'Half Day' %}
+              <span class="status-tag tag-pending">
+                <i class="bi bi-circle-fill" style="font-size:7px;"></i> Half Day
+              </span>
+              {% elif record.status == 'Late' %}
+              <span class="status-tag tag-late">
+                <i class="bi bi-circle-fill" style="font-size:7px;"></i> Late
+              </span>
+              {% else %}
               <span class="status-tag tag-active">
                 <i class="bi bi-circle-fill" style="font-size:7px;"></i> Present
               </span>
+              {% endif %}
             </td>
           </tr>
           {% endfor %}
