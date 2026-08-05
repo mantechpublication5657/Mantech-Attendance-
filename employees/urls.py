@@ -30,4 +30,11 @@ urlpatterns = [
         name='download_experience_letter',
     ),
 
+    # ── appointment letter download ────────────────────────────────────────────
+    path(
+        'employee/<uuid:user_id>/download-appointment-letter/',
+        views.download_appointment_letter,
+        name='download_appointment_letter',
+    ),
+
 ]

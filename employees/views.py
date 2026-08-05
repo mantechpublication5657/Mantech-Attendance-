@@ -721,29 +721,59 @@ def edit_add_employee(request, user_id):
     """
     Admin can edit both basic employee info and admin-controlled data.
     """
+    import logging
+    import traceback
+    from django.db import IntegrityError
+
+    logger = logging.getLogger(__name__)
     user = get_object_or_404(User, id=user_id)
-    profile, _ = EmployeeProfile.objects.get_or_create(user=user)
-    admin_data, _ = AdminControlledData.objects.get_or_create(profile=profile)
 
-    if request.method == "POST":
-        basic_form = EmployeeBasicInfoForm(request.POST, request.FILES, instance=profile)
-        admin_form = EmployeeAdminForm(request.POST, instance=admin_data)
+    try:
+        # get_or_create() isn't safe under concurrent requests for the
+        # same user (e.g. a double-click, or a reload racing an
+        # in-flight save): two requests can both see "doesn't exist"
+        # and both attempt to create, and the second one 500s on the
+        # OneToOneField's uniqueness constraint instead of just
+        # returning the row the first one made.
+        try:
+            profile, _ = EmployeeProfile.objects.get_or_create(user=user)
+        except IntegrityError:
+            profile = EmployeeProfile.objects.get(user=user)
 
-        if basic_form.is_valid() and admin_form.is_valid():
-            basic_form.save()
-            admin_form.save()
-            messages.success(request, "Employee details updated successfully.")
-            return redirect("employee_detail", user_id=user.id)
-    else:
-        basic_form = EmployeeBasicInfoForm(instance=profile)
-        admin_form = EmployeeAdminForm(instance=admin_data)
+        try:
+            admin_data, _ = AdminControlledData.objects.get_or_create(profile=profile)
+        except IntegrityError:
+            admin_data = AdminControlledData.objects.get(profile=profile)
 
-    return render(request, "employees/edit_add_employee.html", {
-        "profile": profile,
-        "basic_form": basic_form,
-        "admin_form": admin_form,
-        "is_admin": True,
-    })
+        if request.method == "POST":
+            basic_form = EmployeeBasicInfoForm(request.POST, request.FILES, instance=profile)
+            admin_form = EmployeeAdminForm(request.POST, instance=admin_data)
+
+            if basic_form.is_valid() and admin_form.is_valid():
+                basic_form.save()
+                admin_form.save()
+                messages.success(request, "Employee details updated successfully.")
+                return redirect("employee_detail", user_id=user.id)
+        else:
+            basic_form = EmployeeBasicInfoForm(instance=profile)
+            admin_form = EmployeeAdminForm(instance=admin_data)
+
+        return render(request, "employees/edit_add_employee.html", {
+            "profile": profile,
+            "basic_form": basic_form,
+            "admin_form": admin_form,
+            "is_admin": True,
+        })
+    except Exception as exc:
+        # Surface the real cause on-screen (visible even with DEBUG=False
+        # in production) instead of a blank 500 page, and log the full
+        # traceback so it shows up in Render's Logs tab either way.
+        logger.exception("edit_add_employee failed for user_id=%s", user_id)
+        messages.error(
+            request,
+            f"Could not open the edit page: {type(exc).__name__}: {exc}",
+        )
+        return redirect("employee_detail", user_id=user_id)
 
 # --------------------------------------------------
 # EDIT BASIC INFO (Employee self-edit)
@@ -1173,7 +1203,7 @@ C_LGREY = colors.HexColor('#f1f5f9')
 # HELPERS
 # ─────────────────────────────────────────────────────────────
 
-def _header(c, W, H):
+def _header(c, W, H, badge_text="EXPERIENCE  LETTER"):
     c.setFillColor(C_NAVY)
     c.rect(0, H - 32*mm, W, 32*mm, fill=1, stroke=0)
 
@@ -1213,7 +1243,7 @@ def _header(c, W, H):
     c.roundRect(badge_x, badge_y, badge_w, 6.5*mm, 3*mm, fill=1, stroke=0)
     c.setFillColor(C_WHITE)
     c.setFont("Helvetica-Bold", 8)
-    c.drawCentredString(badge_x + badge_w / 2, badge_y + 2.2*mm, "EXPERIENCE  LETTER")
+    c.drawCentredString(badge_x + badge_w / 2, badge_y + 2.2*mm, badge_text)
 
 
 def _footer(c, W, ref_no, issue_date):
@@ -1413,6 +1443,182 @@ def download_experience_letter(request, user_id):
         (
             f"We wish {first_name} the very best in all future endeavours and wholeheartedly "
             f"recommend {full_name} to any prospective employer."
+        ),
+    ]
+
+    for para in paras:
+        y = _justified_paragraph(c, para, MX, y, CW)
+        y -= 4*mm
+
+    y -= 3*mm
+
+    # ── SIGNATURE BLOCK ───────────────────────────────────────
+    sig_h = 28*mm
+    sig_y = y - sig_h
+
+    c.setFillColor(C_LGREY)
+    c.roundRect(MX, sig_y, CW, sig_h, 2*mm, fill=1, stroke=0)
+
+    c.setFillColor(C_BLUE)
+    c.roundRect(MX, sig_y, 3*mm, sig_h, 1.5*mm, fill=1, stroke=0)
+    c.rect(MX + 1.5*mm, sig_y, 1.5*mm, sig_h, fill=1, stroke=0)
+
+    c.setFillColor(C_BLUE)
+    c.setFont("Helvetica-Bold", 6.5)
+    c.drawString(MX + 7*mm, sig_y + sig_h - 6*mm, "AUTHORISED SIGNATORY")
+
+    sig_line_x   = MX + 7*mm
+    sig_line_y   = sig_y + 12*mm
+    sig_line_end = MX + 68*mm
+    c.setStrokeColor(C_NAVY)
+    c.setLineWidth(0.7)
+    c.line(sig_line_x, sig_line_y, sig_line_end, sig_line_y)
+
+    c.setFillColor(C_NAVY)
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(MX + 7*mm, sig_line_y - 5*mm, "Ms. Shivani")
+
+    c.setFillColor(C_BLUE)
+    c.setFont("Helvetica", 7.5)
+    c.drawString(MX + 7*mm, sig_line_y - 9.5*mm, "Head – Human Resources")
+
+    c.setFillColor(C_SLATE)
+    c.setFont("Helvetica", 7)
+    c.drawString(MX + 7*mm, sig_line_y - 13.5*mm, "Mantech Publications")
+
+    # Seal circle (right side of sig card)
+    stamp_cx = W - MX - 20*mm
+    stamp_cy = sig_y + sig_h / 2
+    c.setStrokeColor(C_NAVY)
+    c.setLineWidth(0.8)
+    c.setFillColor(colors.HexColor('#f0f6ff'))
+    c.circle(stamp_cx, stamp_cy, 14*mm, fill=1, stroke=1)
+    c.setStrokeColor(C_BLUE)
+    c.setLineWidth(0.4)
+    c.circle(stamp_cx, stamp_cy, 11.5*mm, fill=0, stroke=1)
+    c.setFillColor(C_NAVY)
+    c.setFont("Helvetica-Bold", 5.5)
+    c.drawCentredString(stamp_cx, stamp_cy + 1.5*mm, "OFFICIAL")
+    c.drawCentredString(stamp_cx, stamp_cy - 2.5*mm, "SEAL")
+
+    # ── FOOTER ────────────────────────────────────────────────
+    _footer(c, W, ref_no, issue_date)
+
+    c.save()
+    return response
+
+
+@login_required
+@owner_or_admin_required
+def download_appointment_letter(request, user_id):
+    user    = get_object_or_404(User, id=user_id)
+    profile = get_object_or_404(EmployeeProfile, user=user)
+
+    # ── Data ──────────────────────────────────────────────────
+    full_name  = f"{user.first_name} {user.last_name}".strip().title() or user.username.title()
+    first_name = (user.first_name or full_name.split()[0]).title()
+
+    try:
+        admin_data  = profile.admin_data
+        joining     = admin_data.joining_date.strftime("%d %B %Y") if admin_data.joining_date else "—"
+        designation = str(admin_data.designation).upper()           if admin_data.designation else "—"
+        role        = str(admin_data.role).capitalize()             if admin_data.role        else "—"
+    except Exception:
+        joining     = "—"
+        designation = "—"
+        role        = "—"
+
+    department = str(profile.department or "—").upper()
+    emp_id     = str(profile.emp_id)
+    today      = date.today()
+    issue_date = today.strftime("%d %B %Y")
+    ref_no     = f"MNTCH/APT/{today.year}/{emp_id}"
+
+    # ── Canvas setup ──────────────────────────────────────────
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="AppointmentLetter_{emp_id}.pdf"'
+
+    W, H = 210*mm, 297*mm
+    c    = pdf_canvas.Canvas(response, pagesize=(W, H))
+    MX   = 12*mm
+    CW   = W - 2*MX
+
+    # ── HEADER ────────────────────────────────────────────────
+    _header(c, W, H, badge_text="APPOINTMENT  LETTER")
+
+    # ── REF / DATE strip ──────────────────────────────────────
+    strip_y = H - 40*mm
+    c.setFillColor(C_LGREY)
+    c.rect(0, strip_y, W, 7*mm, fill=1, stroke=0)
+    c.setFillColor(C_SLATE)
+    c.setFont("Helvetica", 7)
+    c.drawString(MX, strip_y + 2.3*mm, f"Ref. No.:  {ref_no}")
+    c.drawRightString(W - MX, strip_y + 2.3*mm, f"Date:  {issue_date}")
+
+    y = strip_y - 12*mm
+
+    # ── EMPLOYEE DETAILS (2-column grid) ──────────────────────
+    y = _section_heading(c, MX, y, "Employee Details", CW)
+    y -= 2*mm
+
+    col_w   = CW / 2
+    left_x  = MX
+    right_x = MX + col_w
+
+    left_col = [
+        ("Employee Name",    full_name),
+        ("Employee ID",      emp_id),
+        ("Designation",      designation),
+    ]
+    right_col = [
+        ("Department",       department),
+        ("Date of Joining",  joining),
+        ("Role",             role),
+    ]
+
+    for (ll, lv), (rl, rv) in zip(left_col, right_col):
+        _detail_cell(c, left_x,  y, ll, lv, col_w)
+        _detail_cell(c, right_x, y, rl, rv, col_w)
+        y -= 10.5*mm
+
+    y -= 4*mm
+    c.setStrokeColor(C_GOLD)
+    c.setLineWidth(0.7)
+    c.line(MX, y, W - MX, y)
+    y -= 6*mm
+
+    # ── SALUTATION ────────────────────────────────────────────
+    c.setFillColor(C_NAVY)
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(MX, y, f"Dear {first_name},")
+    y -= 7*mm
+
+    # ── BODY ──────────────────────────────────────────────────
+    y = _section_heading(c, MX, y, "Letter of Appointment", CW)
+    y -= 3*mm
+
+    paras = [
+        (
+            f"We are pleased to confirm your appointment as {designation} in the {department} "
+            f"Department at Mantech Publications, New Delhi, with effect from {joining}. "
+            f"This letter sets out the confirmation of your appointment on the terms and conditions "
+            f"agreed upon during your selection process."
+        ),
+        (
+            f"In this role, {first_name} will be expected to perform assigned duties with "
+            f"diligence, integrity, and professionalism, and to abide by the policies, code of "
+            f"conduct, and working hours applicable to all employees of Mantech Publications."
+        ),
+        (
+            f"Your employment shall be governed by the terms and conditions set out in the "
+            f"Employee Handbook and applicable company policies, as may be amended by the "
+            f"management from time to time. Any change to your role, designation, or department "
+            f"will be communicated to you formally in writing."
+        ),
+        (
+            f"We warmly welcome {first_name} to the Mantech Publications family and look forward "
+            f"to a long and mutually rewarding association. Kindly sign and return the duplicate "
+            f"copy of this letter as a token of your acceptance of the above terms."
         ),
     ]
 

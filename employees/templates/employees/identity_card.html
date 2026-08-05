@@ -300,7 +300,15 @@
         <i class="fa-solid fa-id-card"></i>
         ID Card
     </a>
-    
+
+    {# ── DOWNLOAD APPOINTMENT LETTER BUTTON ── #}
+    <a href="{% url 'download_appointment_letter' employee.user.id %}"
+       class="id-card-download-btn">
+        <i class="fa-solid fa-download"></i>
+        <i class="fa-solid fa-file-signature"></i>
+        Appointment Letter
+    </a>
+
     {% if not request.user.is_superuser and not request.user.is_staff %}
     {# ── DOWNLOAD EXPERIENCE LETTER BUTTON ── #}
     <a href="{% url 'download_experience_letter' employee.user.id %}"
