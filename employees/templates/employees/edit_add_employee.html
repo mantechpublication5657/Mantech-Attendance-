@@ -238,7 +238,7 @@
             <div class="form-section">
                 <h4 class="section-title">Profile Picture</h4>
                 <div class="upload-box text-center">
-                    <img src="{% if profile.get_profile_picture_url %}{{ profile.get_profile_picture_url }}{% else %}{% static 'images/default-user.png' %}{% endif %}"
+                    <img src="{% if profile.get_profile_picture_url %}{{ profile.get_profile_picture_url }}{% else %}{% static 'images/user_profile.png' %}{% endif %}"
                          class="profile-image mb-3" id="profilePreview">
                     <div class="mb-3">
                         {{ basic_form.profile_picture }}
