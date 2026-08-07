@@ -436,14 +436,18 @@
 
         if (checkinDone && !checkoutDone) {
 
-            // Half-day check-out opens at 2:00 PM
-            const halfDayCheckoutTime = (14 * 60);
+            // Normal checkout = 11 AM
+            let checkoutTime = 11 * 60;
 
-            // Full-day check-out opens at 6:05 PM
-            const fullCheckoutTime = (18 * 60) + 5;
+            // Saturday checkout = 1 PM
+            
+            if (weekDay === 6) {                
+                // Saturday checkout = 10 AM
+                checkoutTime = 10 * 60;
+            }
 
-            // Before half-day checkout time
-            if (currentMinutes < halfDayCheckoutTime) {
+            // Before checkout time
+            if (currentMinutes < checkoutTime) {
 
                 btn.classList.remove(
                     "checkout-active",
@@ -458,20 +462,7 @@
                     '<i class="bi bi-lock-fill"></i> Checkout Later';
             }
 
-            // Half-day window: 2:00 PM - 6:04 PM
-            else if (currentMinutes < fullCheckoutTime) {
-
-                btn.classList.remove("disabled-btn");
-
-                btn.classList.add("checkout-active");
-
-                btn.style.pointerEvents = "auto";
-
-                btn.innerHTML =
-                    '<i class="bi bi-box-arrow-right"></i> Half-Day Check Out';
-            }
-
-            // Full-day checkout: 6:05 PM onward
+            // Allow checkout
             else {
 
                 btn.classList.remove("disabled-btn");
