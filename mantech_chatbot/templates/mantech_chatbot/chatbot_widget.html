@@ -11,7 +11,7 @@
 
 <link rel="stylesheet" href="{% static 'mantech_chatbot/css/chatbot.css' %}">
 
-<button id="mt-chat-trigger" aria-label="Open HRMS Assistant" title="ManTech Assistant">
+<button id="mt-chat-trigger" aria-label="Open HRMS Assistant" title="HRMS Assistant">
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <path d="M12 3C6.5 3 2 6.58 2 11a7.8 7.8 0 0 0 2.75 5.85L3 21l4.5-2.3A11 11 0 0 0 12 19c5.5 0 10-3.58 10-8s-4.5-8-10-8zm1 11H7v-2h6v2zm2-4H7V8h8v2z"/>
   </svg>
@@ -22,7 +22,7 @@
   👋 Hi {{ request.user.first_name|default:request.user.username }}! Need help?
 </div>
 
-<div id="mt-chat-window" role="dialog" aria-label="ManTech HRMS Assistant" aria-modal="true">
+<div id="mt-chat-window" role="dialog" aria-label="HRMS Assistant" aria-modal="true">
 
   <div id="mt-chat-header">
     <div class="mt-bot-avatar" aria-hidden="true">
@@ -31,7 +31,7 @@
       </svg>
     </div>
     <div class="mt-header-info">
-      <div class="mt-bot-name">ManTech Assistant</div>
+      <div class="mt-bot-name">HRMS Assistant</div>
       <div class="mt-bot-status">
         <div class="mt-online-dot" aria-hidden="true"></div>
         Online &mdash; HRMS Support

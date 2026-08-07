@@ -60,6 +60,6 @@ admin.site.register(User, UserAdmin)
 # admin.site.site_title = "Mantech HRMS"
 # admin.site.index_title = "Manage Employees, Payroll, Attendance & Operations"
 
-admin.site.site_header = "🚀 Mantech Administration"
-admin.site.site_title = "Mantech Administration Control"
-admin.site.index_title = "Manage Mantech Administration 🛡️"
+admin.site.site_header = "🚀 Administration"
+admin.site.site_title = "Administration Control"
+admin.site.index_title = "Manage Administration 🛡️"

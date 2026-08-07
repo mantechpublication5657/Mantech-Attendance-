@@ -14,7 +14,7 @@
   /* ── Knowledge base ── */
   const KB = {
     "how_to_use": {
-      text: "Here's a quick guide to <b>ManTech HRMS</b>:<br><br>" +
+      text: "Here's a quick guide to <b>HRMS</b>:<br><br>" +
             "📋 <b>Attendance</b> — Mark, view & download reports<br>" +
             "💰 <b>Payroll</b> — View payslips & salary details<br>" +
             "📝 <b>Grievance</b> — Raise issues to HR<br>" +
@@ -268,7 +268,7 @@
       msgsEl.dataset.initialized = "1";
       setTimeout(function () {
         addMsg("bot",
-          "👋 Hello, <b style = 'text-transform:capitalize;'>" + USER_NAME + "</b>! I'm your ManTech HRMS assistant.<br><br>" +
+          "👋 Hello, <b style = 'text-transform:capitalize;'>" + USER_NAME + "</b>! I'm your HRMS assistant.<br><br>" +
           "I can help you with attendance, payroll, leaves, and grievances. What do you need?");
         setQRs(KB["menu"].qr);
       }, 300);
