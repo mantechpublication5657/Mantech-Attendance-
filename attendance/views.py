@@ -49,7 +49,7 @@ def attendance_home(request, user_id):
     # ==========================================
     if attendance:
         current_time = timezone.localtime().time()
-        office_end_time = time(18,10)
+        office_end_time = time(18, 5)
         late_time = time(9, 40)
 
         if attendance.check_in:
@@ -73,7 +73,7 @@ def attendance_home(request, user_id):
 
             if total_hours <= 1:
                 attendance.status = "Absent"
-            elif total_hours <= 4:
+            elif attendance.check_out < office_end_time:
                 attendance.status = "Half Day"
             elif attendance.check_in > late_time:
                 attendance.status = "Late"
@@ -289,13 +289,17 @@ def check_in(request):
 def check_out(request):
 
     today = localtime().date()
+    current_time = localtime().time()
 
     late_time = timezone.datetime.strptime(
         "09:45",
         "%H:%M"
     ).time()
-    
-    
+
+    # Half-day check-out opens at 2:00 PM, full-day check-out at 6:05 PM.
+    half_day_time = time(14, 0)
+    full_checkout_time = time(18, 5)
+
     attendance = Attendance.objects.filter(
         employee=request.user,
         date=today
@@ -309,10 +313,27 @@ def check_out(request):
         messages.warning(request, "You have already checked out.")
         return redirect('attendance_dashboard', user_id=request.user.id)
 
-    attendance.check_out = localtime().time()
-    attendance.save()
+    if current_time < half_day_time:
+        messages.error(
+            request,
+            "Check-out is not allowed yet. Half-day check-out opens at 2:00 PM "
+            "and full-day check-out at 6:05 PM."
+        )
+        return redirect('attendance_dashboard', user_id=request.user.id)
 
-    messages.success(request, "Check-out successful.")
+    attendance.check_out = current_time
+
+    if current_time < full_checkout_time:
+        attendance.status = "Half Day"
+        attendance.save()
+        messages.success(request, "Half-day check-out successful.")
+    else:
+        if attendance.check_in and attendance.check_in > late_time:
+            attendance.status = "Late"
+        else:
+            attendance.status = "Present"
+        attendance.save()
+        messages.success(request, "Check-out successful.")
 
     return redirect('attendance_dashboard', user_id=request.user.id)
 
@@ -357,8 +378,27 @@ def update_check_out(request, user_id):
 
         return redirect('attendance_dashboard', user_id=request.user.id)
 
+    half_day_time = time(14, 0)
+    full_checkout_time = time(18, 5)
+
+    if current_time < half_day_time:
+        messages.error(
+            request,
+            "Check-out is not allowed yet. Half-day check-out opens at 2:00 PM "
+            "and full-day check-out at 6:05 PM."
+        )
+        return redirect('attendance_dashboard', user_id=request.user.id)
+
     # update checkout time
     attendance.check_out = current_time
+
+    late_time = time(9, 45)
+    if current_time < full_checkout_time:
+        attendance.status = "Half Day"
+    elif attendance.check_in and attendance.check_in > late_time:
+        attendance.status = "Late"
+    else:
+        attendance.status = "Present"
 
     attendance.save()
 
